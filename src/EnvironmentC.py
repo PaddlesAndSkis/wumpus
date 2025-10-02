@@ -141,20 +141,22 @@ class EnvironmentC:
 
     def action_next_move(self, next_move):
 
+        my_actionPercepts = PerceptsC()
+
         if (next_move == "Forward"):
-            self.forward_action()
+            my_actionPercepts = self.forward_action()
         elif (next_move == "TurnLeft"):
             self.agentState.turnLeft()
         elif (next_move == "TurnRight"):
             self.agentState.turnRight()
         elif (next_move == "Shoot"):
-            self.shoot_action()
+            my_actionPercepts = self.shoot_action()
         elif (next_move == "Grab"):
             self.grab_action()
         elif (next_move == "Climb"):
             self.climb_action()
 
-
+        return my_actionPercepts
 
 
     # get_random_coordinate
@@ -207,6 +209,8 @@ class EnvironmentC:
         return pit_list
 
     def forward_action(self):
+        my_actionPercepts = PerceptsC()
+
         candidate_move_loc = self.agentState.forward()
 
         #print(self.coordinates.shape)
@@ -219,19 +223,16 @@ class EnvironmentC:
             (candidate_loc_row < 1) or (candidate_loc_row > 4)):
 
             print("INVALID MOVE OUT OF BOUNDS")
+            my_actionPercepts.set_bump(True)
 
         else:
-
-#        if (candidate_move_loc in self.coordinates):
 
             self.agentState.set_agent_loc(candidate_move_loc)
             self.agent_location = candidate_move_loc
             self.determine_forward_fate()
 
- #       else:
- #           print("INVALID MOVE OUT OF BOUNDS")
+        return my_actionPercepts
 
-       # self.location = (current_loc_col, current_loc_row) 
 
 
     def determine_forward_fate(self):
@@ -266,6 +267,8 @@ class EnvironmentC:
 
     def shoot_action(self):
 
+        my_actionPercepts = PerceptsC()
+
         print ("HAVE ARROW? ", self.agentState.get_hasArrow())
         print ("FACING:     ", self.agentState.get_orientation())
         if (self.agentState.get_hasArrow()):
@@ -297,9 +300,12 @@ class EnvironmentC:
                 if (shoot_location == self.wumpus_location):
                     print ("WUMPUS HAS BEEN KILLED")
 
+                    my_actionPercepts.set_scream(True)
                     self.wumpusState.set_isAlive(False)
                     break;
                 else:
                     print ("NO WUMPUS THERE")
 
             self.agentState.set_hasArrow(False)
+
+        return my_actionPercepts

@@ -27,8 +27,30 @@ class GameControllerC():
 
             next_move = self.agent.select_next_move(myPercepts)
 
-            self.environment.action_next_move(next_move)
+            myActionPercepts = self.environment.action_next_move(next_move)
 
+            # Add to the PerceptsC class
+
+            percepts_list = []
+
+            if (myActionPercepts.get_stench()):
+                percepts_list.append("Stench")
+
+            if (myActionPercepts.get_breeze()):
+                percepts_list.append("Breeze")
+
+            if (myActionPercepts.get_glitter()):
+                percepts_list.append("Glitter")
+
+            if (myActionPercepts.get_bump()):
+                percepts_list.append("Bump")
+
+            if (myActionPercepts.get_scream()):
+                percepts_list.append("Scream")
+
+
+
+            print ("My ACTION PERCEPTS: ", percepts_list)
             self.environment.display_board()
 
 
