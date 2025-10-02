@@ -9,12 +9,10 @@ from GameControllerC import GameControllerC
 
 def main():
 
-    print ("Welcome Player 1")
+    print ("Ready Player 1")
 
     # Initialize the Agent.
 
-    #agent_loc = (1, 1)
-    #myAgent = NaiveAgentC(agent_loc)
     myAgent = NaiveAgentC()
 
     # Initialize the environment.
@@ -28,6 +26,6 @@ def main():
 
 
 
-# Start the program.
+# Release the Wumpus!
 
 main()

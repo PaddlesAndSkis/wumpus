@@ -6,6 +6,7 @@ import random
 
 from AgentStateC import AgentStateC
 from WumpusStateC import WumpusStateC
+from PerceptsC import PerceptsC
 
 # class: EnvironmentC
 
@@ -21,7 +22,7 @@ class EnvironmentC:
         self.allowClimbWithoutGold = allowClimbWithoutGold
         self.pitProb = pitProb
 
-        self.coordinates =  [['-' for x in range(1, self.width)] for y in range(1, self.height)] 
+        self.coordinates =  [['.' for x in range(1, self.width)] for y in range(1, self.height)] 
 
         # Create an occupied_list array.
 
@@ -58,7 +59,7 @@ class EnvironmentC:
 
     def get_active_episode(self):
 
-        if (self.agentState.get_isAlive()):
+        if ((self.agentState.get_isAlive()) and (self.agentState.get_hasClimbedOut() == False)):
             return True
 
 #  Add this later once successful climb        return self.active_episode
@@ -67,35 +68,81 @@ class EnvironmentC:
 
         print("displaying board")
 
-        for i in range(1, self.height+1):
+        for y in range(self.height, 0, -1):
 
-            for j in range(1, self.width+1):
+            for x in range(1, self.width+1):
 
-                if ((i, j) == self.agent_location):
+                if ((x, y) == self.agent_location):
                     print ('A', ' ', end='')
-                elif ((i, j) == self.wumpus_location):
+                elif ((x, y) == self.wumpus_location):
 
                     if (self.wumpusState.get_isAlive()):
                         print ('W', ' ', end='')
                     else:
                         print ('w', ' ', end='')
-                elif ((i, j) == self.gold_location):
+                elif ((x, y) == self.gold_location):
                     print ('G', ' ', end='')
-                elif ((i, j) in self.pit_locations):
+                elif ((x, y) in self.pit_locations):
                     print ('P', ' ', end='')
                 else:
-                    print ('-', ' ', end='')
+                    print ('.', ' ', end='')
 
             print()
+
+
+    def get_percepts(self):
+
+        agent_percepts = PerceptsC()
+
+        # Pits.  If the Agent is adjacent to a pit send a breeze percept.
+
+        for loc in self.pit_locations:
+
+            pit_adjacent_rooms = []
+
+            curr_loc_col = loc[0]
+            curr_loc_row = loc[1]
+
+            pit_adjacent_rooms.append((curr_loc_col, curr_loc_row+1)) # north
+            pit_adjacent_rooms.append((curr_loc_col, curr_loc_row-1)) # south
+            pit_adjacent_rooms.append((curr_loc_col+1, curr_loc_row)) # east
+            pit_adjacent_rooms.append((curr_loc_col-1, curr_loc_row)) # west
+
+            if self.agent_location in pit_adjacent_rooms:
+                agent_percepts.set_breeze(True)
+                break
+
+
+        # Wampus.  If the Agent is adjacent to the Wumpus or is on top of a dead
+        # Wampus, send a stench percept.
+
+        wampus_adjacent_rooms = []
+
+        wampus_col = self.wumpus_location[0]
+        wampus_row = self.wumpus_location[1]
+
+        wampus_adjacent_rooms.append((wampus_col, wampus_row+1)) # north
+        wampus_adjacent_rooms.append((wampus_col, wampus_row-1)) # south
+        wampus_adjacent_rooms.append((wampus_col+1, wampus_row)) # east
+        wampus_adjacent_rooms.append((wampus_col-1, wampus_row)) # west
+
+        if self.agent_location in wampus_adjacent_rooms:
+            agent_percepts.set_stench(True)
+
+        # Gold.  If the Agent is in the same room as the gold
+        # send a glitter percept.
+
+        if (self.agent_location == self.gold_location):
+            agent_percepts.set_glitter(True)
+
+        return agent_percepts
+
+
 
     def action_next_move(self, next_move):
 
         if (next_move == "Forward"):
-            self.agentState.forward()
-            self.agent_location = self.agentState.get_agent_loc()
-
-            self.determine_forward_fate()
-
+            self.forward_action()
         elif (next_move == "TurnLeft"):
             self.agentState.turnLeft()
         elif (next_move == "TurnRight"):
@@ -105,7 +152,7 @@ class EnvironmentC:
         elif (next_move == "Grab"):
             self.grab_action()
         elif (next_move == "Climb"):
-            self.agentState.climb()
+            self.climb_action()
 
 
 
@@ -159,13 +206,42 @@ class EnvironmentC:
 
         return pit_list
 
+    def forward_action(self):
+        candidate_move_loc = self.agentState.forward()
+
+        #print(self.coordinates.shape)
+
+        candidate_loc_col = candidate_move_loc[0]
+        candidate_loc_row = candidate_move_loc[1]
+
+        print ("Candidate: (", candidate_loc_col, candidate_loc_row,")" )
+        if ((candidate_loc_col < 1) or (candidate_loc_col > 4) or 
+            (candidate_loc_row < 1) or (candidate_loc_row > 4)):
+
+            print("INVALID MOVE OUT OF BOUNDS")
+
+        else:
+
+#        if (candidate_move_loc in self.coordinates):
+
+            self.agentState.set_agent_loc(candidate_move_loc)
+            self.agent_location = candidate_move_loc
+            self.determine_forward_fate()
+
+ #       else:
+ #           print("INVALID MOVE OUT OF BOUNDS")
+
+       # self.location = (current_loc_col, current_loc_row) 
+
+
     def determine_forward_fate(self):
 
         if (self.agent_location in self.pit_locations):
             print ("AAAAHHHH... FELL INTO A PIT")
             self.agentState.set_isAlive(False)
 
-        elif (self.agent_location == self.wumpus_location):
+        elif ((self.agent_location == self.wumpus_location) and
+              (self.wumpusState.get_isAlive())):
             print ("AAAGGGG.... WUMPUS HAS EATEN THE AGENT")
             self.agentState.set_isAlive(False)
 
@@ -179,9 +255,19 @@ class EnvironmentC:
             print("NO GOLD HERE!!")
 
 
+    def climb_action(self):
+
+        if (self.agent_location == (1, 1)):
+            print ("Climbing out!!")
+            self.agentState.set_hasClimbedOut(True)
+        else:
+            print ("CAN'T CLIMB OUT - need to be at (1,1)")
+
+
     def shoot_action(self):
 
         print ("HAVE ARROW? ", self.agentState.get_hasArrow())
+        print ("FACING:     ", self.agentState.get_orientation())
         if (self.agentState.get_hasArrow()):
 
             orientation = self.agentState.get_orientation()
@@ -189,22 +275,31 @@ class EnvironmentC:
             current_loc_col = current_loc[0]
             current_loc_row = current_loc[1]
 
+            shoot_path_rooms = []
+
             if (orientation == "south"):
-                current_loc_col = current_loc_col + 1
+                for i in range(current_loc_row-1, 0, -1):
+                    shoot_path_rooms.append((current_loc_col, i))
             elif (orientation == "north"):
-                current_loc_col = current_loc_col - 1
+                for i in range(current_loc_row+1, 4+1):
+                    shoot_path_rooms.append((current_loc_col, i))
             elif (orientation == "east"):
-                current_loc_row = current_loc_row + 1
+                for i in range(current_loc_col+1, 4+1):
+                    shoot_path_rooms.append((i, current_loc_row))
             elif (orientation == "west"):
-                current_loc_row = current_loc_row - 1
-    
-            shoot_location = (current_loc_col, current_loc_row)
+                for i in range(current_loc_col-1, 0, -1):
+                    shoot_path_rooms.append((i, current_loc_row))
+                    
+            for shoot_location in shoot_path_rooms:
 
-            if (shoot_location == self.wumpus_location):
-                print ("WUMPUS HAS BEEN KILLED")
+#            shoot_location = (current_loc_col, current_loc_row)
+                print ("Shoot Room", shoot_location)
+                if (shoot_location == self.wumpus_location):
+                    print ("WUMPUS HAS BEEN KILLED")
 
-                self.wumpusState.set_isAlive(False)
-            else:
-                print ("NO WUMPUS THERE")
+                    self.wumpusState.set_isAlive(False)
+                    break;
+                else:
+                    print ("NO WUMPUS THERE")
 
             self.agentState.set_hasArrow(False)

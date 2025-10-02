@@ -18,6 +18,7 @@ class AgentStateC():
         self.hasGold = False
         self.hasArrow = True
         self.isAlive = True
+        self.hasClimbedOut = False
 
 
     # Define Getters and Setters.
@@ -58,7 +59,16 @@ class AgentStateC():
     def set_isAlive(self, isAlive):
         self.isAlive = isAlive
 
+    def get_hasClimbedOut(self):
+        return self.hasClimbedOut
+
+    def set_hasClimbedOut(self, hasClimbedOut):
+        self.hasClimbedOut = hasClimbedOut
+
+
     def forward(self):
+
+        # ONLY MOVE FORWARD IF WITHIN THE CAVE BOUNDARIES.
 
         current_loc_col = self.location[0]
         current_loc_row = self.location[1]
@@ -66,15 +76,17 @@ class AgentStateC():
         print ("Currently at (", current_loc_col, current_loc_row, ") facing ", self.orientation)
 
         if (self.orientation == "south"):
-            current_loc_col = current_loc_col + 1
-        elif (self.orientation == "north"):
-            current_loc_col = current_loc_col - 1
-        elif (self.orientation == "east"):
-            current_loc_row = current_loc_row + 1
-        elif (self.orientation == "west"):
             current_loc_row = current_loc_row - 1
+        elif (self.orientation == "north"):
+            current_loc_row = current_loc_row + 1
+        elif (self.orientation == "east"):
+            current_loc_col = current_loc_col + 1
+        elif (self.orientation == "west"):
+            current_loc_col = current_loc_col - 1
 
-        self.location = (current_loc_col, current_loc_row) 
+        print ("Moved ", self.orientation, " and now at (", current_loc_col, current_loc_row, ")")
+
+        return (current_loc_col, current_loc_row)
 
 
     def turnLeft(self):

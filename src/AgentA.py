@@ -15,12 +15,12 @@ class AgentA(ABC):
 
 
     @abstractmethod
-    def select_next_move(self):
+    def select_next_move(self, percepts):
 
         # Algorithm for selecting the next move.
         
         # Return nil for the abstract class.
         
         return nil
-
+    
 

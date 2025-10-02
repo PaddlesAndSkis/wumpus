@@ -19,8 +19,13 @@ class GameControllerC():
 
         while (self.environment.get_active_episode()):
 
-#        for i in range(4):
-            next_move = self.agent.select_next_move()
+            # Get the Percepts to notify the Agent.
+
+            myPercepts = self.environment.get_percepts()
+
+            # The Agent will select its next move based on the Percepts.
+
+            next_move = self.agent.select_next_move(myPercepts)
 
             self.environment.action_next_move(next_move)
 
