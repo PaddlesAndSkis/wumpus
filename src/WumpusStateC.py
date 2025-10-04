@@ -1,26 +1,16 @@
+# Import Project classes.
 
-class WumpusStateC:
-
-
-    def __init__(self, location):
-
-        # General.
-
-        self.location = location
-        self.isAlive = True
+from CharacterStateA import CharacterStateA
 
 
-    # Getters and Setters.
+class WumpusStateC(CharacterStateA):
 
-    def get_location(self):
-        return self.location
 
-    def set_location(self, location):
-        self.location = location
+     def __init__(self, location):
 
-    def get_isAlive(self):
-        return self.isAlive
+        # Call the super class.
 
-    def set_isAlive(self, isAlive):
-        self.isAlive = isAlive
+        super().__init__(location)
 
+        # No other attributes for WumpusState other than 
+        # the super class.

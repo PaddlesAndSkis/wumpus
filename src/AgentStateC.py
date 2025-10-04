@@ -1,6 +1,9 @@
+# Import Project classes.
+
+from CharacterStateA import CharacterStateA
 
 
-class AgentStateC():
+class AgentStateC(CharacterStateA):
 
     orientation_array = [ "north", "south", "east", "west"]
     facing_array = [ "left", "right"]
@@ -9,25 +12,29 @@ class AgentStateC():
 
     def __init__(self, location):
 
-        # General.
+        # Call the super class.
 
-        self.location = location
+        super().__init__(location)
+
+        # Define attributes specific to AgentStateC.
+
         self.orientation = "east"
         self.facing = "right"
 
         self.hasGold = False
         self.hasArrow = True
-        self.isAlive = True
         self.hasClimbedOut = False
+
+        self.score = 0
 
 
     # Define Getters and Setters.
 
-    def get_agent_loc(self):
-        return self.location
+  #  def get_agent_loc(self):
+  #      return self.location
 
-    def set_agent_loc(self, location):
-        self.location = location
+   # def set_agent_loc(self, location):
+   #     self.location = location
 
     def get_orientation(self):
         return self.orientation
@@ -53,18 +60,20 @@ class AgentStateC():
     def set_hasArrow(self, hasArrow):
         self.hasArrow = hasArrow
     
-    def get_isAlive(self):
-        return self.isAlive
-
-    def set_isAlive(self, isAlive):
-        self.isAlive = isAlive
-
     def get_hasClimbedOut(self):
         return self.hasClimbedOut
 
     def set_hasClimbedOut(self, hasClimbedOut):
         self.hasClimbedOut = hasClimbedOut
 
+    def get_score(self):
+        return self.score
+
+    def set_score(self, score):
+        self.score = score
+
+    def update_score(self, score_value):
+        self.score = self.score + score_value
 
     def forward(self):
 
@@ -73,7 +82,7 @@ class AgentStateC():
         current_loc_col = self.location[0]
         current_loc_row = self.location[1]
 
-        print ("Currently at (", current_loc_col, current_loc_row, ") facing ", self.orientation)
+        print ("Action Result:\t\t Currently at (", current_loc_col, current_loc_row, ") facing ", self.orientation)
 
         if (self.orientation == "south"):
             current_loc_row = current_loc_row - 1
@@ -84,7 +93,7 @@ class AgentStateC():
         elif (self.orientation == "west"):
             current_loc_col = current_loc_col - 1
 
-        print ("Moved ", self.orientation, " and now at (", current_loc_col, current_loc_row, ")")
+        print ("Action Result:\t\t Moved ", self.orientation, " and now at (", current_loc_col, current_loc_row, ")")
 
         return (current_loc_col, current_loc_row)
 
@@ -100,6 +109,8 @@ class AgentStateC():
         elif (self.orientation == "west"):
             self.orientation = "south"
 
+        print ("Action Result:\t\t Currently facing ", self.orientation)
+        
 
     def turnRight(self):
 
@@ -112,17 +123,19 @@ class AgentStateC():
         elif (self.orientation == "west"):
             self.orientation = "north"
 
+        print ("Action Result:\t\t Currently facing ", self.orientation)
+
 
     def shoot(self):
 
-        print ("Shoot!!")
+        print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Shoot!!")
 
     def grab(self):
 
-        print ("Grab!!")
+        print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Grab!!")
 
     def climb(self):
 
-        print ("Climb!!")
+        print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Climb!!")
 
 

@@ -14,7 +14,7 @@ class EnvironmentC:
     
     # Constructor.
     
-    def __init__(self, width=4, height=4, allowClimbWithoutGold=False, pitProb=0.2):
+    def __init__(self, width=4, height=4, allowClimbWithoutGold=True, pitProb=0.2):
 
         self.active_episode = True
         self.width = width
@@ -36,18 +36,18 @@ class EnvironmentC:
 
         # Initialize the location of the Wumpus and add its location to the occupied list.
 
-        self.wumpus_location = self.get_random_coordinate(occupied_list)
+        self.wumpus_location = self.__get_random_coordinate(occupied_list)
         self.wumpusState = WumpusStateC(self.wumpus_location)
         occupied_list.append(self.wumpus_location)
 
         # Initialize the location of the Gold and add its location to the occupied list.
 
-        self.gold_location = self.get_random_coordinate(occupied_list)
+        self.gold_location = self.__get_random_coordinate(occupied_list)
         occupied_list.append(self.gold_location)
 
         # Initialize the location of the pits based on the occupied list.
 
-        self.pit_locations = self.determine_pit_locations(occupied_list)
+        self.pit_locations = self.__determine_pit_locations(occupied_list)
 
         print (self.coordinates)
 
@@ -62,13 +62,27 @@ class EnvironmentC:
         if ((self.agentState.get_isAlive()) and (self.agentState.get_hasClimbedOut() == False)):
             return True
 
+
+    def get_Agent_Score(self):
+
+        return self.agentState.get_score()
+
+
 #  Add this later once successful climb        return self.active_episode
 
     def display_board(self):
 
-        print("displaying board")
+        print ("\n")
+
+        # Draw the y grid starting from height.
 
         for y in range(self.height, 0, -1):
+
+            # Tab over for more readability.
+
+            print ("\t", end='')
+
+            # Draw the x grid starting from 1.
 
             for x in range(1, self.width+1):
 
@@ -88,6 +102,8 @@ class EnvironmentC:
                     print ('.', ' ', end='')
 
             print()
+
+        print ("\n--------------------<<\n")
 
 
     def get_percepts(self):
@@ -143,25 +159,33 @@ class EnvironmentC:
 
         my_actionPercepts = PerceptsC()
 
+        # An action has been taken.  Regardless of the outcome, update 
+        # the score by -1.
+
+        self.agentState.update_score(-1)
+
         if (next_move == "Forward"):
-            my_actionPercepts = self.forward_action()
+            my_actionPercepts = self.__forward_action()
         elif (next_move == "TurnLeft"):
             self.agentState.turnLeft()
         elif (next_move == "TurnRight"):
             self.agentState.turnRight()
         elif (next_move == "Shoot"):
-            my_actionPercepts = self.shoot_action()
+            my_actionPercepts = self.__shoot_action()
         elif (next_move == "Grab"):
-            self.grab_action()
+            self.__grab_action()
         elif (next_move == "Climb"):
-            self.climb_action()
+            self.__climb_action()
 
         return my_actionPercepts
 
 
-    # get_random_coordinate
+    # Private methods
 
-    def get_random_coordinate(self, occupied_list):
+
+    # __get_random_coordinate
+
+    def __get_random_coordinate(self, occupied_list):
 
         # Get a random coordinate.  Keep trying until the random coordinate
         # is available.
@@ -185,14 +209,13 @@ class EnvironmentC:
         return (random_col, random_row)
 
 
-    # determine_pit_locations
+    # __determine_pit_locations
 
-    def determine_pit_locations(self, occupied_list):
+    def __determine_pit_locations(self, occupied_list):
 
         pit_list = []
         pit_or_nopit = [ 'P', '-' ]
         pit_probabilities = [self.pitProb, (1 - self.pitProb)]
-        #pit_probabilities = [0.2, 0.8]
 
         for i in range(1, self.height+1):
 
@@ -204,11 +227,13 @@ class EnvironmentC:
 
                     if (pit == 'P'):
                         pit_list.append((i, j))
-    #                    print('Pit', pit)
 
         return pit_list
 
-    def forward_action(self):
+
+    # __forward_action
+
+    def __forward_action(self):
         my_actionPercepts = PerceptsC()
 
         candidate_move_loc = self.agentState.forward()
@@ -218,63 +243,61 @@ class EnvironmentC:
         candidate_loc_col = candidate_move_loc[0]
         candidate_loc_row = candidate_move_loc[1]
 
-        print ("Candidate: (", candidate_loc_col, candidate_loc_row,")" )
+        print ("Action Result:\t\t Candidate: (", candidate_loc_col, candidate_loc_row,")" )
         if ((candidate_loc_col < 1) or (candidate_loc_col > 4) or 
             (candidate_loc_row < 1) or (candidate_loc_row > 4)):
 
-            print("INVALID MOVE OUT OF BOUNDS")
+            print("Action Result:\t\t INVALID MOVE OUT OF BOUNDS")
             my_actionPercepts.set_bump(True)
 
         else:
 
-            self.agentState.set_agent_loc(candidate_move_loc)
+            self.agentState.set_location(candidate_move_loc)
             self.agent_location = candidate_move_loc
-            self.determine_forward_fate()
+            self.__determine_forward_fate()
 
         return my_actionPercepts
 
 
+    # __determine_forward_fate
 
-    def determine_forward_fate(self):
+    def __determine_forward_fate(self):
 
         if (self.agent_location in self.pit_locations):
-            print ("AAAAHHHH... FELL INTO A PIT")
+            print ("Action Result:\t\t AAAAHHHH... FELL INTO A PIT")
             self.agentState.set_isAlive(False)
+
+            # The Agent has fallen into a pit.  Update the score -1000.
+
+            self.agentState.update_score(-1000)
+
 
         elif ((self.agent_location == self.wumpus_location) and
               (self.wumpusState.get_isAlive())):
-            print ("AAAGGGG.... WUMPUS HAS EATEN THE AGENT")
+            print ("Action Result:\t\t AAAGGGG.... WUMPUS HAS EATEN THE AGENT")
             self.agentState.set_isAlive(False)
 
+            # The Agent has been eaten by the Wumpus.  Update the score -1000.
 
-    def grab_action(self):
-
-        if (self.agent_location == self.gold_location):
-            print("GOT THE GOLD!!!!")
-            self.agentState.set_hasGold(True)
-        else:
-            print("NO GOLD HERE!!")
+            self.agentState.update_score(-1000)
 
 
-    def climb_action(self):
+    # __shoot_action
 
-        if (self.agent_location == (1, 1)):
-            print ("Climbing out!!")
-            self.agentState.set_hasClimbedOut(True)
-        else:
-            print ("CAN'T CLIMB OUT - need to be at (1,1)")
-
-
-    def shoot_action(self):
+    def __shoot_action(self):
 
         my_actionPercepts = PerceptsC()
 
-        print ("HAVE ARROW? ", self.agentState.get_hasArrow())
-        print ("FACING:     ", self.agentState.get_orientation())
+        print ("Action Result:\t\t HAVE ARROW? ", self.agentState.get_hasArrow())
+        print ("Action Result:\t\t FACING:     ", self.agentState.get_orientation())
         if (self.agentState.get_hasArrow()):
 
+            # The arrow has been slung.  Update the score -10.
+
+            self.agentState.update_score(-10)
+
             orientation = self.agentState.get_orientation()
-            current_loc = self.agentState.get_agent_loc()
+            current_loc = self.agentState.get_location()
             current_loc_col = current_loc[0]
             current_loc_row = current_loc[1]
 
@@ -298,14 +321,59 @@ class EnvironmentC:
 #            shoot_location = (current_loc_col, current_loc_row)
                 print ("Shoot Room", shoot_location)
                 if (shoot_location == self.wumpus_location):
-                    print ("WUMPUS HAS BEEN KILLED")
+                    print ("Action Result:\t\t WUMPUS HAS BEEN KILLED")
 
                     my_actionPercepts.set_scream(True)
                     self.wumpusState.set_isAlive(False)
                     break;
                 else:
-                    print ("NO WUMPUS THERE")
+                    print ("Action Result:\t\t NO WUMPUS THERE")
 
             self.agentState.set_hasArrow(False)
 
         return my_actionPercepts
+
+
+    def __grab_action(self):
+
+        if (self.agent_location == self.gold_location):
+            print("Action Result:\t\t GOT THE GOLD!!!!")
+            self.agentState.set_hasGold(True)
+        else:
+            print("Action Result:\t\t NO GOLD HERE!!")
+
+
+    def __climb_action(self):
+
+        # The Agent can only climb out from the original room.
+
+        if (self.agent_location == (1, 1)):
+
+            # Determine if the Agent has the gold.
+
+            if (self.agentState.get_hasGold()):
+                
+                # The gold has been grabbed and climbing out.  Update the score +1000.
+
+                self.agentState.update_score(1000)
+
+                print ("Action Result:\t\t Climbing out with the gold :-) !!")
+                self.agentState.set_hasClimbedOut(True)
+
+            else:
+                # The Agent can only climb out without the gold if the
+                # episode permits its.
+
+                if (self.allowClimbWithoutGold):
+                    print ("Action Result:\t\t Climbing out without the gold :-( ")
+                    self.agentState.set_hasClimbedOut(True)
+
+                else:
+                    print ("Action Result:\t\t Agent cannot climb out without the gold")
+
+        else:
+            # The Agent is not in the original room.
+
+            print ("Action Result:\t\t CAN'T CLIMB OUT - need to be at (1,1)")
+
+

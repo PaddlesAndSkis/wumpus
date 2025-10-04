@@ -1,5 +1,5 @@
 
-# Import classes and libraries.
+# Import Project classes.
 
 from EnvironmentC import EnvironmentC
 from NaiveAgentC import NaiveAgentC

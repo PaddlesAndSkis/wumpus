@@ -2,6 +2,8 @@
 
 import random
 
+# Import Project classes.
+
 from AgentA import AgentA
 
 class NaiveAgentC(AgentA):
@@ -26,13 +28,13 @@ class NaiveAgentC(AgentA):
         if (percepts.get_scream()):
             percepts_list.append("Scream")
 
-        print("Agent senses...", percepts_list)
+        print("Pre-action Percepts:\t", percepts_list)
 
         possible_moves = [ 'Forward', 'TurnLeft', 'TurnRight', 'Shoot', 'Grab', 'Climb' ]
         
         random_move = random.randint(0, 5)
 
-        print ("Next Move: ", possible_moves[random_move])
+        print ("Selected Action:\t", possible_moves[random_move])
         
         return possible_moves[random_move]
 

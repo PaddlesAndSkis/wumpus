@@ -1,3 +1,5 @@
+# Import Project classes.
+
 from AgentA import AgentA
 from EnvironmentC import EnvironmentC
 
@@ -19,6 +21,8 @@ class GameControllerC():
 
         while (self.environment.get_active_episode()):
 
+            print (">>--------------------")
+            
             # Get the Percepts to notify the Agent.
 
             myPercepts = self.environment.get_percepts()
@@ -50,27 +54,11 @@ class GameControllerC():
 
 
 
-            print ("My ACTION PERCEPTS: ", percepts_list)
+            print ("Post-action Percepts:\t", percepts_list)
             self.environment.display_board()
 
+        # Get the final score for the Agent.
 
+        agent_score = self.environment.get_Agent_Score()
 
-#        self.agent.forward()
-
-#        self.environment.set_agent_loc(self.agent.get_agent_loc())
-#        self.environment.display_board()
-
-#        self.agent.turnRight()
-#        self.agent.forward()
-
-#        self.environment.set_agent_loc(self.agent.get_agent_loc())
-#        self.environment.display_board()
-
-#        self.agent.turnLeft()
- #       self.agent.forward()
-
- #       self.environment.set_agent_loc(self.agent.get_agent_loc())
- #       self.environment.display_board()
-
-
-
+        print ("The Agent's final score is: ", agent_score)
