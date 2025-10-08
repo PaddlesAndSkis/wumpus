@@ -72,36 +72,105 @@ class EnvironmentC:
 
     def display_board(self):
 
+        print ("\n\t     ", end='')
+
+        # Draw the x grid numbers.
+
+        for x in range(1, self.width+1):
+            print ('.', x, '.  ', end='')
+
         print ("\n")
+
+        # Get the orientation of the Agent.
+
+        agent_orientation = self.agentState.get_orientation()
+        agent_x = self.agent_location[0]
+        agent_y = self.agent_location[1]
+
+       # print ("Orientation: ", agent_orientation, (agent_x, agent_y-1))
 
         # Draw the y grid starting from height.
 
         for y in range(self.height, 0, -1):
+            
+            # Deal with the northern layer.
+            
+            print ("\t     ", end='')
+
+            for z in range(1, self.width+1):
+               
+               # for zz in range(1, 3):
+
+                    if ((z, y) == (agent_x, agent_y)) and (agent_orientation == "north"):
+                        print ('--^--  ', end='')
+                    else:
+                        print ('-----  ', end='')
+
+            print ("\n")
 
             # Tab over for more readability.
 
-            print ("\t", end='')
+            print ("\t", y, "  ", end='')
+
+
 
             # Draw the x grid starting from 1.
 
             for x in range(1, self.width+1):
 
-                if ((x, y) == self.agent_location):
-                    print ('A', ' ', end='')
+             #           1  2  3  4 
+             #       4
+
+             #       3         A               A = (3, 3)     East  (4, 3)
+             #                                                West  (2, 3)
+             #       2                                        North (3, 4)
+             #                                                South (3, 2)
+             #       1  
+
+                if ((x, y) == self.agent_location) and (agent_orientation == "west"):
+                    print ('<.A..', ' ', end='')
+                elif ((x, y) == self.agent_location) and (agent_orientation == "east"):
+                    print ('..A.>', ' ', end='')
+                elif ((x, y) == self.agent_location):
+                    print ('..A..', ' ', end='')
+
+               # elif ((x, y) == (agent_x-1, agent_y)) and (agent_orientation == "west"):
+              #      print ('<', ' ', end='')
+             #   elif ((x, y) == (agent_x+1, agent_y)) and (agent_orientation == "east"):
+             #       print ('>', ' ', end='')
+
                 elif ((x, y) == self.wumpus_location):
 
                     if (self.wumpusState.get_isAlive()):
-                        print ('W', ' ', end='')
+                        print ('..W..', ' ', end='')
                     else:
-                        print ('w', ' ', end='')
-                elif ((x, y) == self.gold_location):
-                    print ('G', ' ', end='')
-                elif ((x, y) in self.pit_locations):
-                    print ('P', ' ', end='')
-                else:
-                    print ('.', ' ', end='')
+                        print ('..w..', ' ', end='')
 
-            print()
+                elif ((x, y) == self.gold_location):
+                    print ('..G..', ' ', end='')
+                elif ((x, y) in self.pit_locations):
+                    print ('..P..', ' ', end='')
+                else:
+                    print ('.....', ' ', end='')
+
+            print ("\n")
+
+            # Deal with the southern orientation layer.
+             
+            print ("\t     ", end='')
+          
+            for z in range(1, self.width+1):
+
+              #  for zz in range(1, 3):
+
+                    if ((z, y) == (agent_x, agent_y)) and (agent_orientation == "south"):
+                        print ('--V--  ', end='')
+                    else:
+                        print ('-----  ', end='')
+
+
+
+            print("\n\n")
 
         print ("\n--------------------<<\n")
 
