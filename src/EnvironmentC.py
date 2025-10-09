@@ -22,8 +22,6 @@ class EnvironmentC:
         self.allowClimbWithoutGold = allowClimbWithoutGold
         self.pitProb = pitProb
 
-        self.coordinates =  [['.' for x in range(1, self.width)] for y in range(1, self.height)] 
-
         # Create an occupied_list array.
 
         occupied_list = []
@@ -49,12 +47,12 @@ class EnvironmentC:
 
         self.pit_locations = self.__determine_pit_locations(occupied_list)
 
-        print (self.coordinates)
-
-        print ("Agent", self.agent_location)
-        print ("Wumpus", self.wumpus_location)
-        print ("Gold", self.gold_location)
-        print ("Pit", self.pit_locations)
+    #    print ("The Episode:")
+    #    print ("------------")
+     #   print ("The Agent is at: \t", self.agent_location)
+    #    print ("The Wumpus is at: \t", self.wumpus_location)
+     #   print ("The Gold is at: \t", self.gold_location)
+    #    print ("The Pit(s) are at: \t", self.pit_locations)
 
 
     def get_active_episode(self):
@@ -67,10 +65,34 @@ class EnvironmentC:
 
         return self.agentState.get_score()
 
+    def display_initial_episode(self):
+
+        print ("The Episode:")
+        print ("------------")
+        print ("The Agent is at: \t", self.agent_location)
+        print ("The Wumpus is at: \t", self.wumpus_location)
+        print ("The Gold is at: \t", self.gold_location)
+        print ("The Pit(s) are at: \t", self.pit_locations)
+        print ("The Agent is facing: \t", self.agentState.get_orientation())
+        # Display the initial episode board.
+
+        self.display_board()
+
+
 
 #  Add this later once successful climb        return self.active_episode
 
-    def display_board(self):
+    def display_board(self, pre_action_percepts=None, post_action_percepts=None):
+
+        if (pre_action_percepts != None):
+            print ("Pre-Action Percepts:\t", end='')
+            pre_action_percepts.print()
+
+        if (post_action_percepts != None):
+            print ("Post-Action Percepts:\t", end='')
+            post_action_percepts.print()
+
+        print ("The agent score is: ", self.agentState.get_score())
 
         print ("\n\t     ", end='')
 
@@ -172,7 +194,7 @@ class EnvironmentC:
 
             print("\n\n")
 
-        print ("\n--------------------<<\n")
+      #  print ("\n--------------------<<\n")
 
 
     def get_percepts(self):
@@ -306,8 +328,6 @@ class EnvironmentC:
         my_actionPercepts = PerceptsC()
 
         candidate_move_loc = self.agentState.forward()
-
-        #print(self.coordinates.shape)
 
         candidate_loc_col = candidate_move_loc[0]
         candidate_loc_row = candidate_move_loc[1]

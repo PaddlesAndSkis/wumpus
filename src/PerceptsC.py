@@ -42,4 +42,27 @@ class PerceptsC():
         self.scream = scream
 
 
+    def print(self):
+
+        # Add to the PerceptsC class
+
+        percepts_list = []
+
+        if (self.get_stench()):
+            percepts_list.append("Stench")
+
+        if (self.get_breeze()):
+            percepts_list.append("Breeze")
+
+        if (self.get_glitter()):
+            percepts_list.append("Glitter")
+
+        if (self.get_bump()):
+            percepts_list.append("Bump")
+
+        if (self.get_scream()):
+            percepts_list.append("Scream")
+
+        print (percepts_list)
+
 
