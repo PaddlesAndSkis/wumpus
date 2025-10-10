@@ -50,15 +50,19 @@ class EnvironmentC:
         self.pit_locations = self.__determine_pit_locations(occupied_list)
 
 
-    # get_active_episode
+    # is_active_episode
 
-    def get_active_episode(self):
+    def is_active_episode(self) -> bool:
 
         # An episode is still active if the Agent is still alive and has not yet
         # climbed out of the cave.
 
         if ((self.agentState.get_isAlive()) and (self.agentState.get_hasClimbedOut() == False)):
             return True
+
+        # Inactive episode.
+
+        return False
 
 
     # get_Agent_Score
@@ -243,12 +247,13 @@ class EnvironmentC:
         return agent_percepts
 
 
+    # take_action
 
-    def action_next_move(self, next_move):
+    def take_action(self, next_move) -> PerceptsC:
 
         my_actionPercepts = PerceptsC()
 
-        # An action has been taken.  Regardless of the outcome, update 
+        # Time to take action.  Regardless of the outcome, update 
         # the score by -1.
 
         self.agentState.update_score(-1)

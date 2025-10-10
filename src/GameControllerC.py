@@ -18,6 +18,8 @@ class GameControllerC():
         self.environment = environment
 
 
+    # playEpisode
+
     def playEpisode(self):
 
         # Display the initial board.
@@ -26,31 +28,33 @@ class GameControllerC():
 
         # Execute the episode until it is no longer active.
 
-        while (self.environment.get_active_episode()):
+        while (self.environment.is_active_episode()):
 
             if Global._display: print (">>--------------------")
             
-            # Get the pre-Action Percepts to notify the Agent.
+            # Get the pre-action Percepts to notify the Agent.
 
             pre_action_percepts = self.environment.get_percepts()
 
-            if Global._display:
-                print ("Pre-Action Percepts:\t", end='')
-                pre_action_percepts.print()
+            # Notify the Agent of the pre-action percepts and print them out.
 
-            # The Agent will select its next action based on the Percepts.
+            self.agent.percept(pre_action_percepts)
+            self.agent.print_percepts()
 
-            next_action = self.agent.select_next_action(pre_action_percepts)
+            # The Agent will now select its next action.
 
-            # Get the post-Action Percepts to notify the Agent.
+            action = self.agent.action()
 
-            post_action_percepts = self.environment.action_next_move(next_action)
+            # Take the action selected by the Agent in the Environment.
 
-            if Global._display:
-                print ("Post-Action Percepts:\t", end='')
-                post_action_percepts.print()
+            post_action_percepts = self.environment.take_action(action)
+           
+            # Notify the Agent of the post-action percepts and print them out.
 
-            # Display the game board.
+            self.agent.percept(post_action_percepts)
+            self.agent.print_percepts()
+
+            # Display the game board after each action.
 
             if Global._display: self.environment.display_board()
 

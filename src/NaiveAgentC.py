@@ -12,27 +12,33 @@ from AgentA import AgentA
 
 class NaiveAgentC(AgentA):
     
-    # select_next_action
+    # percept
 
-    def select_next_action(self, percepts) -> str:
+    def percept(self, percepts):
+
+        # For the Naive Agent that isn't using Percepts, just
+        # call the super class.
+
+        super().percept(percepts)
+
+
+    # action
+
+    def action(self) -> str:
  
         # For the Naive Agent, the percepts will be received but not used
-        # in selecting the next action.  The algorithm for selecting the next
-        # action is random.
-
-        # Define a list of possible actions.
-
-        possible_actions = [ 'Forward', 'TurnLeft', 'TurnRight', 'Shoot', 'Grab', 'Climb' ]
+        # in selecting the action to take.  The algorithm for selecting the
+        # action to take is random.
         
-        # Randomly select one of the possible actions.
+        # Randomly select one of the possible actions from the action set.
 
         agent_action = random.randint(0, 5)
 
-        if Global._display: print ("Selected Action:\t", possible_actions[agent_action])
+        if Global._display: print ("Selected Action:\t", self.action_set[agent_action])
         
         # Return the randomly selected action.
 
-        return possible_actions[agent_action]
+        return self.action_set[agent_action]
 
 
 
