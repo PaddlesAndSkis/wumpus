@@ -18,17 +18,15 @@ class AgentA(ABC):
 
         self.percepts = None
 
-        # Define the set of actions an Agent can take.
 
-        self.action_set = [ 'Forward', 'TurnLeft', 'TurnRight', 'Shoot', 'Grab', 'Climb' ]
-
-
+    # print_percepts
 
     def print_percepts(self):
 
-        if Global._display:
-            print ("Percepts:\t", end='')
-            self.percepts.print()
+        # Print out the percepts.
+
+        print ("Percepts:\t", end='')
+        self.percepts.print()
 
 
     # percept

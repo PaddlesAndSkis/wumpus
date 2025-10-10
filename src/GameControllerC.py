@@ -13,6 +13,8 @@ class GameControllerC():
     # Constructor.
 
     def __init__(self, agent, environment):
+        
+        # The Game Controller requires an Agent and an Environment.
 
         self.agent = agent
         self.environment = environment
@@ -36,10 +38,9 @@ class GameControllerC():
 
             pre_action_percepts = self.environment.get_percepts()
 
-            # Notify the Agent of the pre-action percepts and print them out.
+            # Notify the Agent of the pre-action percepts.
 
             self.agent.percept(pre_action_percepts)
-            self.agent.print_percepts()
 
             # The Agent will now select its next action.
 
@@ -49,10 +50,9 @@ class GameControllerC():
 
             post_action_percepts = self.environment.take_action(action)
            
-            # Notify the Agent of the post-action percepts and print them out.
+            # Notify the Agent of the post-action percepts.
 
             self.agent.percept(post_action_percepts)
-            self.agent.print_percepts()
 
             # Display the game board after each action.
 

@@ -92,13 +92,24 @@ class EnvironmentC:
 
     # display_board
 
+                 #           1  2  3  4 
+             #       4
+
+             #       3         A               A = (3, 3)     East  (4, 3)
+             #                                                West  (2, 3)
+             #       2                                        North (3, 4)
+             #                                                South (3, 2)
+             #       1  
+
+
+
     def display_board(self):
         
         print ("The agent score is:\t", self.agentState.get_score())
 
         print ("\n\t     ", end='')
 
-        # Draw the x grid numbers.
+        # Draw the x grid coordinates.
 
         for x in range(1, self.width+1):
             print (' ', x, '   ', end='')
@@ -108,62 +119,55 @@ class EnvironmentC:
         # Get the orientation of the Agent.
 
         agent_orientation = self.agentState.get_orientation()
-        agent_x = self.agent_location[0]
+        agent_x = self.agent_location[0]    # Should just be able to use agent_orientation
         agent_y = self.agent_location[1]
-
-       # print ("Orientation: ", agent_orientation, (agent_x, agent_y-1))
 
         # Draw the y grid starting from height.
 
         for y in range(self.height, 0, -1):
             
-            # Deal with the northern layer.
+            # Draw the northern orientation layer.
             
             print ("\t     ", end='')
 
             for z in range(1, self.width+1):
-               
-               # for zz in range(1, 3):
 
-                    if ((z, y) == (agent_x, agent_y)) and (agent_orientation == "north"):
-                        print ('  ^    ', end='')
-                    else:
-                        print ('       ', end='')
+                # Determine if this is the area the Agent is facing north.
 
-            print ("\n")
+                if ((z, y) == (agent_x, agent_y)) and (agent_orientation == Global._north)
+                    print ('  ^    ', end='')
+                else:
+                    print ('       ', end='')
 
-            # Tab over for more readability.
+            # Tab over for more readability and output the y grid coordinate.
 
-            print ("\t", y, "  ", end='')
-
-
+            print ("\n\t", y, "  ", end='')
 
             # Draw the x grid starting from 1.
 
             for x in range(1, self.width+1):
 
-             #           1  2  3  4 
-             #       4
+                if ((x, y) == self.agent_location) and (agent_orientation == Global._west):
 
-             #       3         A               A = (3, 3)     East  (4, 3)
-             #                                                West  (2, 3)
-             #       2                                        North (3, 4)
-             #                                                South (3, 2)
-             #       1  
+                    # Display the Agent facing west.
 
-                if ((x, y) == self.agent_location) and (agent_orientation == "west"):
                     print ('< A  ', ' ', end='')
-                elif ((x, y) == self.agent_location) and (agent_orientation == "east"):
+
+                elif ((x, y) == self.agent_location) and (agent_orientation == Global._east):
+
+                    # Display the Agent facing east.
+
                     print ('  A >', ' ', end='')
+
                 elif ((x, y) == self.agent_location):
+
+                    # Display the Agent (facing either north or south).
+
                     print ('  A  ', ' ', end='')
 
-               # elif ((x, y) == (agent_x-1, agent_y)) and (agent_orientation == "west"):
-              #      print ('<', ' ', end='')
-             #   elif ((x, y) == (agent_x+1, agent_y)) and (agent_orientation == "east"):
-             #       print ('>', ' ', end='')
-
                 elif ((x, y) == self.wumpus_location):
+
+                    # Determine if the Wumpus is dead or alive.
 
                     if (self.wumpusState.get_isAlive()):
                         print ('  W  ', ' ', end='')
@@ -171,35 +175,36 @@ class EnvironmentC:
                         print ('  w  ', ' ', end='')
 
                 elif ((x, y) == self.gold_location) and (self.agentState.get_hasGold() == False):
+
+                    # Determine if the Gold has already been grabbed.
+
                     print ('  G  ', ' ', end='')
+
                 elif ((x, y) in self.pit_locations):
                     print ('  P  ', ' ', end='')
+
                 else:
                     print ('     ', ' ', end='')
 
-            print ("\n")
-
-            # Deal with the southern orientation layer.
+            # Draw the sourthern orientation layer.
              
-            print ("\t     ", end='')
+            print ("\n\t     ", end='')
           
             for z in range(1, self.width+1):
 
-              #  for zz in range(1, 3):
+                # Determine if this is the area the Agent is facing south.
 
-                    if ((z, y) == (agent_x, agent_y)) and (agent_orientation == "south"):
-                        print ('  V    ', end='')
-                    else:
-                        print ('       ', end='')
-
-
+                if ((z, y) == (agent_x, agent_y)) and (agent_orientation == Global._south):
+                    print ('  V    ', end='')
+                else:
+                    print ('       ', end='')
 
             print("\n")
 
-      #  print ("\n--------------------<<\n")
 
+    # get_percepts
 
-    def get_percepts(self):
+    def get_percepts(self) -> PerceptsC
 
         agent_percepts = PerceptsC()
 
@@ -249,7 +254,7 @@ class EnvironmentC:
 
     # take_action
 
-    def take_action(self, next_move) -> PerceptsC:
+    def take_action(self, action) -> PerceptsC:
 
         my_actionPercepts = PerceptsC()
 
@@ -258,17 +263,22 @@ class EnvironmentC:
 
         self.agentState.update_score(-1)
 
-        if (next_move == "Forward"):  # Global._forward
+        if (action == Global._forward_action):  
             my_actionPercepts = self.__forward_action()
-        elif (next_move == "TurnLeft"):
-            self.agentState.turnLeft()
-        elif (next_move == "TurnRight"):
-            self.agentState.turnRight()
-        elif (next_move == "Shoot"):
+
+        elif (action == Global._turnLeft_action):
+            self.__turnLeft_action()
+
+        elif (action == Global._turnRight_action):
+            self.__turnRight_action()
+
+        elif (action == Global._shoot_action):
             my_actionPercepts = self.__shoot_action()
-        elif (next_move == "Grab"):
+
+        elif (action == Global._grab_action):
             self.__grab_action()
-        elif (next_move == "Climb"):
+
+        elif (action == Global._climb_action):
             self.__climb_action()
 
         return my_actionPercepts
@@ -376,12 +386,12 @@ class EnvironmentC:
 
     # __shoot_action
 
-    def __shoot_action(self):
+    def __shoot_action(self) -> PerceptsC:
 
         my_actionPercepts = PerceptsC()
 
-        print ("Action Result:\t\t HAVE ARROW? ", self.agentState.get_hasArrow())
-        print ("Action Result:\t\t FACING:     ", self.agentState.get_orientation())
+        if Global._display: print ("Action Result:\t\t HAVE ARROW? ", self.agentState.get_hasArrow())
+        if Global._display: print ("Action Result:\t\t FACING:     ", self.agentState.get_orientation())
         if (self.agentState.get_hasArrow()):
 
             # The arrow has been slung.  Update the score -10.
@@ -395,51 +405,84 @@ class EnvironmentC:
 
             shoot_path_rooms = []
 
-            if (orientation == "south"):
+            # Determine the arrow flight path through the cave based on which
+            # direction the Agent is facing.
+
+            if (orientation == Global._south):
+                # South
+
                 for i in range(current_loc_row-1, 0, -1):
                     shoot_path_rooms.append((current_loc_col, i))
-            elif (orientation == "north"):
+
+            elif (orientation == Global._north):
+                # North
+                
                 for i in range(current_loc_row+1, 4+1):
                     shoot_path_rooms.append((current_loc_col, i))
-            elif (orientation == "east"):
+            elif (orientation == Global._east):
+                # East
+
                 for i in range(current_loc_col+1, 4+1):
                     shoot_path_rooms.append((i, current_loc_row))
-            elif (orientation == "west"):
+            elif (orientation == Global._west):
+                # West
+
                 for i in range(current_loc_col-1, 0, -1):
                     shoot_path_rooms.append((i, current_loc_row))
                     
+            # Iterate over the rooms that are in the shooting path.
+
             for shoot_location in shoot_path_rooms:
 
-#            shoot_location = (current_loc_col, current_loc_row)
-                print ("Shoot Room", shoot_location)
+                if Global._display: print ("Shoot Room", shoot_location)
+
+                # Is the Wumpus in this room?
+
                 if (shoot_location == self.wumpus_location):
-                    print ("Action Result:\t\t WUMPUS HAS BEEN KILLED")
+                   # Yes.
+
+                    if Global._display: print ("Action Result:\t\t WUMPUS HAS BEEN KILLED")
+
+                    # Update the precepts and set the Wumpus alive status to False.
 
                     my_actionPercepts.set_scream(True)
                     self.wumpusState.set_isAlive(False)
                     break;
                 else:
-                    print ("Action Result:\t\t NO WUMPUS THERE")
+                    # No.
+
+                    if Global._display: print ("Action Result:\t\t NO WUMPUS THERE")
+
+            # Remove the arrow from the Agent state.
 
             self.agentState.set_hasArrow(False)
+
+        # Return the new set of percepts that occurred post-action firing.
 
         return my_actionPercepts
 
 
+    # __grab_action
+
     def __grab_action(self):
 
-        if (self.agent_location == self.gold_location):
-            print("Action Result:\t\t GOT THE GOLD!!!!")
-            self.agentState.set_hasGold(True)
-        else:
-            print("Action Result:\t\t NO GOLD HERE!!")
+        # Determine if the Gold is in the same room as the Agent.
 
+        if (self.agent_location == self.gold_location):
+            if Global._display: print("Action Result:\t\t GOT THE GOLD!!!!")
+            self.agentState.set_hasGold(True)
+
+        else:
+            if Global._display: print("Action Result:\t\t NO GOLD HERE!!")
+
+
+    # __climb_action
 
     def __climb_action(self):
 
         # The Agent can only climb out from the original room.
 
-        if (self.agent_location == (1, 1)):
+        if (self.agent_location == Global._start_room):
 
             # Determine if the Agent has the gold.
 
@@ -449,7 +492,7 @@ class EnvironmentC:
 
                 self.agentState.update_score(1000)
 
-                print ("Action Result:\t\t Climbing out with the gold :-) !!")
+                if Global._display: print ("Action Result:\t\t Climbing out with the gold :-) !!")
                 self.agentState.set_hasClimbedOut(True)
 
             else:
@@ -457,15 +500,28 @@ class EnvironmentC:
                 # episode permits its.
 
                 if (self.allowClimbWithoutGold):
-                    print ("Action Result:\t\t Climbing out without the gold :-( ")
+                    if Global._display: print ("Action Result:\t\t Climbing out without the gold :-( ")
                     self.agentState.set_hasClimbedOut(True)
 
                 else:
-                    print ("Action Result:\t\t Agent cannot climb out without the gold")
+                    if Global._display: print ("Action Result:\t\t Agent cannot climb out without the gold")
 
         else:
             # The Agent is not in the original room.
 
-            print ("Action Result:\t\t CAN'T CLIMB OUT - need to be at (1,1)")
+            if Global._display: print ("Action Result:\t\t CAN'T CLIMB OUT - need to be at ", Global._start_room)
 
 
+
+    def __turnRight_action(self):
+
+        # Agent turns right.
+
+        self.agentState.turnRight()
+
+
+    def __turnLeft_action(self):
+
+        # Agent turns left.
+
+        self.agentState.turnLeft()

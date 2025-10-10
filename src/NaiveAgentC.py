@@ -21,6 +21,11 @@ class NaiveAgentC(AgentA):
 
         super().percept(percepts)
 
+        # Print the percepts.
+
+        if Global._display:
+            self.print_percepts()
+
 
     # action
 
@@ -34,11 +39,11 @@ class NaiveAgentC(AgentA):
 
         agent_action = random.randint(0, 5)
 
-        if Global._display: print ("Selected Action:\t", self.action_set[agent_action])
+        if Global._display: print ("Selected Action:\t", Global._action_set[agent_action])
         
         # Return the randomly selected action.
 
-        return self.action_set[agent_action]
+        return Global._action_set[agent_action]
 
 
 
