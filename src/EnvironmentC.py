@@ -4,6 +4,8 @@ import random
 
 # Import Project classes.
 
+import Global
+
 from AgentStateC import AgentStateC
 from WumpusStateC import WumpusStateC
 from PerceptsC import PerceptsC
@@ -47,23 +49,26 @@ class EnvironmentC:
 
         self.pit_locations = self.__determine_pit_locations(occupied_list)
 
-    #    print ("The Episode:")
-    #    print ("------------")
-     #   print ("The Agent is at: \t", self.agent_location)
-    #    print ("The Wumpus is at: \t", self.wumpus_location)
-     #   print ("The Gold is at: \t", self.gold_location)
-    #    print ("The Pit(s) are at: \t", self.pit_locations)
 
+    # get_active_episode
 
     def get_active_episode(self):
+
+        # An episode is still active if the Agent is still alive and has not yet
+        # climbed out of the cave.
 
         if ((self.agentState.get_isAlive()) and (self.agentState.get_hasClimbedOut() == False)):
             return True
 
 
-    def get_Agent_Score(self):
+    # get_Agent_Score
+
+    def get_Agent_Score(self) -> int:
 
         return self.agentState.get_score()
+
+
+    # display_initial_episode
 
     def display_initial_episode(self):
 
@@ -74,32 +79,25 @@ class EnvironmentC:
         print ("The Gold is at: \t", self.gold_location)
         print ("The Pit(s) are at: \t", self.pit_locations)
         print ("The Agent is facing: \t", self.agentState.get_orientation())
+        print ("------------")
+
         # Display the initial episode board.
 
         self.display_board()
 
 
+    # display_board
 
-#  Add this later once successful climb        return self.active_episode
-
-    def display_board(self, pre_action_percepts=None, post_action_percepts=None):
-
-        if (pre_action_percepts != None):
-            print ("Pre-Action Percepts:\t", end='')
-            pre_action_percepts.print()
-
-        if (post_action_percepts != None):
-            print ("Post-Action Percepts:\t", end='')
-            post_action_percepts.print()
-
-        print ("The agent score is: ", self.agentState.get_score())
+    def display_board(self):
+        
+        print ("The agent score is:\t", self.agentState.get_score())
 
         print ("\n\t     ", end='')
 
         # Draw the x grid numbers.
 
         for x in range(1, self.width+1):
-            print ('.', x, '.  ', end='')
+            print (' ', x, '   ', end='')
 
         print ("\n")
 
@@ -124,9 +122,9 @@ class EnvironmentC:
                # for zz in range(1, 3):
 
                     if ((z, y) == (agent_x, agent_y)) and (agent_orientation == "north"):
-                        print ('--^--  ', end='')
+                        print ('  ^    ', end='')
                     else:
-                        print ('-----  ', end='')
+                        print ('       ', end='')
 
             print ("\n")
 
@@ -150,11 +148,11 @@ class EnvironmentC:
              #       1  
 
                 if ((x, y) == self.agent_location) and (agent_orientation == "west"):
-                    print ('<.A..', ' ', end='')
+                    print ('< A  ', ' ', end='')
                 elif ((x, y) == self.agent_location) and (agent_orientation == "east"):
-                    print ('..A.>', ' ', end='')
+                    print ('  A >', ' ', end='')
                 elif ((x, y) == self.agent_location):
-                    print ('..A..', ' ', end='')
+                    print ('  A  ', ' ', end='')
 
                # elif ((x, y) == (agent_x-1, agent_y)) and (agent_orientation == "west"):
               #      print ('<', ' ', end='')
@@ -164,16 +162,16 @@ class EnvironmentC:
                 elif ((x, y) == self.wumpus_location):
 
                     if (self.wumpusState.get_isAlive()):
-                        print ('..W..', ' ', end='')
+                        print ('  W  ', ' ', end='')
                     else:
-                        print ('..w..', ' ', end='')
+                        print ('  w  ', ' ', end='')
 
-                elif ((x, y) == self.gold_location):
-                    print ('..G..', ' ', end='')
+                elif ((x, y) == self.gold_location) and (self.agentState.get_hasGold() == False):
+                    print ('  G  ', ' ', end='')
                 elif ((x, y) in self.pit_locations):
-                    print ('..P..', ' ', end='')
+                    print ('  P  ', ' ', end='')
                 else:
-                    print ('.....', ' ', end='')
+                    print ('     ', ' ', end='')
 
             print ("\n")
 
@@ -186,13 +184,13 @@ class EnvironmentC:
               #  for zz in range(1, 3):
 
                     if ((z, y) == (agent_x, agent_y)) and (agent_orientation == "south"):
-                        print ('--V--  ', end='')
+                        print ('  V    ', end='')
                     else:
-                        print ('-----  ', end='')
+                        print ('       ', end='')
 
 
 
-            print("\n\n")
+            print("\n")
 
       #  print ("\n--------------------<<\n")
 
@@ -255,7 +253,7 @@ class EnvironmentC:
 
         self.agentState.update_score(-1)
 
-        if (next_move == "Forward"):
+        if (next_move == "Forward"):  # Global._forward
             my_actionPercepts = self.__forward_action()
         elif (next_move == "TurnLeft"):
             self.agentState.turnLeft()

@@ -1,12 +1,14 @@
+# AgentStateC.py
+
 # Import Project classes.
+
+import Global
 
 from CharacterStateA import CharacterStateA
 
 
 class AgentStateC(CharacterStateA):
 
-    orientation_array = [ "north", "south", "east", "west"]
-    facing_array = [ "left", "right"]
 
     # Default constructor.
 
@@ -18,8 +20,8 @@ class AgentStateC(CharacterStateA):
 
         # Define attributes specific to AgentStateC.
 
-        self.orientation = "east"
-        self.facing = "right"
+        self.orientation = Global._east
+        self.facing = Global._right
 
         self.hasGold = False
         self.hasArrow = True
@@ -30,43 +32,37 @@ class AgentStateC(CharacterStateA):
 
     # Define Getters and Setters.
 
-  #  def get_agent_loc(self):
-  #      return self.location
-
-   # def set_agent_loc(self, location):
-   #     self.location = location
-
-    def get_orientation(self):
+    def get_orientation(self) -> str:
         return self.orientation
 
     def set_orientation(self, orientation):
         self.orientation = orientation
 
-    def get_facing(self):
+    def get_facing(self) -> str:
         return self.facing
 
     def set_facing(self, facing):
         self.facing = facing
 
-    def get_hasGold(self):
+    def get_hasGold(self) -> bool:
         return self.hasGold
 
     def set_hasGold(self, hasGold):
         self.hasGold = hasGold
 
-    def get_hasArrow(self):
+    def get_hasArrow(self) -> bool:
         return self.hasArrow
 
     def set_hasArrow(self, hasArrow):
         self.hasArrow = hasArrow
     
-    def get_hasClimbedOut(self):
+    def get_hasClimbedOut(self) -> bool:
         return self.hasClimbedOut
 
     def set_hasClimbedOut(self, hasClimbedOut):
         self.hasClimbedOut = hasClimbedOut
 
-    def get_score(self):
+    def get_score(self) -> int:
         return self.score
 
     def set_score(self, score):
@@ -75,55 +71,62 @@ class AgentStateC(CharacterStateA):
     def update_score(self, score_value):
         self.score = self.score + score_value
 
-    def forward(self):
 
-        # ONLY MOVE FORWARD IF WITHIN THE CAVE BOUNDARIES.
+    # forward
+
+    def forward(self) -> ():
+
+        # Only advance the Agent if within the cave boundaries.
 
         current_loc_col = self.location[0]
         current_loc_row = self.location[1]
 
-        print ("Action Result:\t\t Currently at (", current_loc_col, current_loc_row, ") facing ", self.orientation)
+        if Global._display: print ("Action Result:\t\t Currently at (", current_loc_col, current_loc_row, ") facing ", self.orientation)
 
-        if (self.orientation == "south"):
+        if (self.orientation == Global._south):
             current_loc_row = current_loc_row - 1
-        elif (self.orientation == "north"):
+        elif (self.orientation == Global._north):
             current_loc_row = current_loc_row + 1
-        elif (self.orientation == "east"):
+        elif (self.orientation == Global._east):
             current_loc_col = current_loc_col + 1
-        elif (self.orientation == "west"):
+        elif (self.orientation == Global._west):
             current_loc_col = current_loc_col - 1
 
-        print ("Action Result:\t\t Moved ", self.orientation, " and now at (", current_loc_col, current_loc_row, ")")
+        if Global._display: print ("Action Result:\t\t Moved ", self.orientation, " and now at (", current_loc_col, current_loc_row, ")")
 
         return (current_loc_col, current_loc_row)
 
 
+    # turnLeft
+
     def turnLeft(self):
 
-        if (self.orientation == "south"):
-            self.orientation = "east"
-        elif (self.orientation == "north"):
-            self.orientation = "west"
-        elif (self.orientation == "east"):
-            self.orientation = "north"
-        elif (self.orientation == "west"):
-            self.orientation = "south"
+        if (self.orientation == Global._south):
+            self.orientation = Global._east
+        elif (self.orientation == Global._north):
+            self.orientation = Global._west
+        elif (self.orientation == Global._east):
+            self.orientation = Global._north
+        elif (self.orientation == Global._west):
+            self.orientation = Global._south
 
-        print ("Action Result:\t\t Currently facing ", self.orientation)
+        if Global._display: print ("Action Result:\t\t Currently facing ", self.orientation)
         
+    
+    # turnRight
 
     def turnRight(self):
 
-        if (self.orientation == "south"):
-            self.orientation = "west"
-        elif (self.orientation == "north"):
-            self.orientation = "east"
-        elif (self.orientation == "east"):
-            self.orientation = "south"
-        elif (self.orientation == "west"):
-            self.orientation = "north"
+        if (self.orientation == Global._south):
+            self.orientation = Global._west
+        elif (self.orientation == Global._north):
+            self.orientation = Global._east
+        elif (self.orientation == Global._east):
+            self.orientation = Global._south
+        elif (self.orientation == Global._west):
+            self.orientation = Global._north
 
-        print ("Action Result:\t\t Currently facing ", self.orientation)
+        if Global._display: print ("Action Result:\t\t Currently facing ", self.orientation)
 
 
     def shoot(self):

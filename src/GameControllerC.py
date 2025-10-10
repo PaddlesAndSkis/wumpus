@@ -1,7 +1,12 @@
+# GameControllerC.py
+
 # Import Project classes.
+
+import Global
 
 from AgentA import AgentA
 from EnvironmentC import EnvironmentC
+
 
 class GameControllerC():
     
@@ -15,55 +20,41 @@ class GameControllerC():
 
     def playEpisode(self):
 
-        # Display the inital board.
+        # Display the initial board.
 
-        self.environment.display_initial_episode()
+        if Global._display: self.environment.display_initial_episode()
 
-        # Execute the episode until it is not activate.
+        # Execute the episode until it is no longer active.
 
         while (self.environment.get_active_episode()):
 
-            print (">>--------------------")
+            if Global._display: print (">>--------------------")
             
             # Get the pre-Action Percepts to notify the Agent.
 
             pre_action_percepts = self.environment.get_percepts()
 
-            # The Agent will select its next move based on the Percepts.
+            if Global._display:
+                print ("Pre-Action Percepts:\t", end='')
+                pre_action_percepts.print()
 
-            next_move = self.agent.select_next_move(pre_action_percepts)
+            # The Agent will select its next action based on the Percepts.
 
-            post_action_percepts = self.environment.action_next_move(next_move)
+            next_action = self.agent.select_next_action(pre_action_percepts)
 
-            # Add to the PerceptsC class
+            # Get the post-Action Percepts to notify the Agent.
 
-            post_action_percepts_list = []
+            post_action_percepts = self.environment.action_next_move(next_action)
 
-            if (post_action_percepts.get_stench()):
-                post_action_percepts_list.append("Stench")
-
-            if (post_action_percepts.get_breeze()):
-                post_action_percepts_list.append("Breeze")
-
-            if (post_action_percepts.get_glitter()):
-                post_action_percepts_list.append("Glitter")
-
-            if (post_action_percepts.get_bump()):
-                post_action_percepts_list.append("Bump")
-
-            if (post_action_percepts.get_scream()):
-                post_action_percepts_list.append("Scream")
-
-            print ("Post-action Percepts:\t", post_action_percepts_list)
+            if Global._display:
+                print ("Post-Action Percepts:\t", end='')
+                post_action_percepts.print()
 
             # Display the game board.
 
-            # Why are these not seeming to show up.
+            if Global._display: self.environment.display_board()
 
-            self.environment.display_board(pre_action_percepts, post_action_percepts)
 
-        # Get the final score for the Agent.
+        # Print the final score for the Agent.
 
-        agent_score = self.environment.get_Agent_Score()
-
-        print ("The Agent's final score is: ", agent_score)
+        print ("Episode Complete: the Agent's final score is: ", self.environment.get_Agent_Score())

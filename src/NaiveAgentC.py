@@ -1,42 +1,38 @@
+# NaiveAgentC.py
+
 # Import libraries.
 
 import random
 
 # Import Project classes.
 
+import Global
+
 from AgentA import AgentA
 
 class NaiveAgentC(AgentA):
     
+    # select_next_action
 
-    def select_next_move(self, percepts):
+    def select_next_action(self, percepts) -> str:
  
-        percepts_list = []
+        # For the Naive Agent, the percepts will be received but not used
+        # in selecting the next action.  The algorithm for selecting the next
+        # action is random.
 
-        if (percepts.get_stench()):
-            percepts_list.append("Stench")
+        # Define a list of possible actions.
 
-        if (percepts.get_breeze()):
-            percepts_list.append("Breeze")
-
-        if (percepts.get_glitter()):
-            percepts_list.append("Glitter")
-
-        if (percepts.get_bump()):
-            percepts_list.append("Bump")
-
-        if (percepts.get_scream()):
-            percepts_list.append("Scream")
-
-        print("Pre-action Percepts:\t", percepts_list)
-
-        possible_moves = [ 'Forward', 'TurnLeft', 'TurnRight', 'Shoot', 'Grab', 'Climb' ]
+        possible_actions = [ 'Forward', 'TurnLeft', 'TurnRight', 'Shoot', 'Grab', 'Climb' ]
         
-        random_move = random.randint(0, 5)
+        # Randomly select one of the possible actions.
 
-        print ("Selected Action:\t", possible_moves[random_move])
+        agent_action = random.randint(0, 5)
+
+        if Global._display: print ("Selected Action:\t", possible_actions[agent_action])
         
-        return possible_moves[random_move]
+        # Return the randomly selected action.
+
+        return possible_actions[agent_action]
 
 
 

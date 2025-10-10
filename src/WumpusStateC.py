@@ -1,3 +1,5 @@
+# WumpusStateC.py
+
 # Import Project classes.
 
 from CharacterStateA import CharacterStateA
@@ -5,8 +7,9 @@ from CharacterStateA import CharacterStateA
 
 class WumpusStateC(CharacterStateA):
 
+    # Constructor.
 
-     def __init__(self, location):
+    def __init__(self, location):
 
         # Call the super class.
 

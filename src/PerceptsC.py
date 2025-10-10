@@ -1,6 +1,12 @@
+# PerceptsC.py
+
 class PerceptsC():
 
+    # Constructor
+
     def __init__(self, stench=False, breeze=False, glitter=False, bump=False, scream=False):
+
+        # Set object attributes.
 
         self.stench = stench
         self.breeze = breeze
@@ -11,36 +17,38 @@ class PerceptsC():
 
     # Getters and Setters.
 
-    def get_stench(self):
+    def get_stench(self) -> bool:
         return self.stench 
 
     def set_stench(self, stench):
         self.stench = stench
 
-    def get_breeze(self):
+    def get_breeze(self) -> bool:
         return self.breeze 
 
     def set_breeze(self, breeze):
         self.breeze = breeze 
 
-    def get_glitter(self):
+    def get_glitter(self) -> bool:
         return self.glitter
 
     def set_glitter(self, glitter):
         self.glitter = glitter 
 
-    def get_bump(self):
+    def get_bump(self) -> bool:
         return self.bump
 
     def set_bump(self, bump):
         self.bump = bump
 
-    def get_scream(self):
+    def get_scream(self) -> bool:
         return self.scream
 
     def set_scream(self, scream):
         self.scream = scream
 
+
+    # print
 
     def print(self):
 

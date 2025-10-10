@@ -1,6 +1,9 @@
+# AgentA.py
+
 # Import libraries.
 
 from abc import ABC, abstractmethod
+
 
 class AgentA(ABC):
 
@@ -13,11 +16,13 @@ class AgentA(ABC):
 
         pass
 
+    
+    # select_next_action
 
     @abstractmethod
-    def select_next_move(self, percepts):
+    def select_next_action(self, percepts) -> str:
 
-        # Algorithm for selecting the next move.
+        # Implement an algorithm for selecting the next action.
         
         # Return nil for the abstract class.
         
