@@ -1,3 +1,4 @@
+# Global.py
 
 # Global variables.
 
@@ -20,6 +21,8 @@ _right = "right"
 _orientation_array = [ _north, _south, _east, _west]
 _facing_array      = [ _left, _right]
 
+# Actions
+
 _forward_action   = "Forward"
 _turnLeft_action  = "TurnLeft"
 _turnRight_action = "TurnRight"
@@ -29,5 +32,5 @@ _climb_action     = "Climb"
 
 # Define the set of actions an Agent can take.
 
-_action_set = [ _forward_action, _turnLeft_action, _turnRight_action, _shoot_action, _grab_action, _climb_action ]
+_action_array = [ _forward_action, _turnLeft_action, _turnRight_action, _shoot_action, _grab_action, _climb_action ]
 

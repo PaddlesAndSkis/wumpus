@@ -11,9 +11,9 @@ class WumpusStateC(CharacterStateA):
 
     def __init__(self, location):
 
-        # Call the super class.
+        # Call the super class to set the location.
 
         super().__init__(location)
 
-        # No other attributes for WumpusState other than 
-        # the super class.
+        # No other attributes required for WumpusState other than 
+        # what is provided in the super class (location, isAlive).

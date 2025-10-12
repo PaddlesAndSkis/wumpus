@@ -14,7 +14,7 @@ class AgentStateC(CharacterStateA):
 
     def __init__(self, location):
 
-        # Call the super class.
+        # Call the super class to set the location.
 
         super().__init__(location)
 
@@ -26,6 +26,8 @@ class AgentStateC(CharacterStateA):
         self.hasGold = False
         self.hasArrow = True
         self.hasClimbedOut = False
+
+        # Initialize the score to 0.
 
         self.score = 0
 
@@ -81,8 +83,6 @@ class AgentStateC(CharacterStateA):
         current_loc_col = self.location[0]
         current_loc_row = self.location[1]
 
-        if Global._display: print ("Action Result:\t\t Currently at (", current_loc_col, current_loc_row, ") facing ", self.orientation)
-
         if (self.orientation == Global._south):
             current_loc_row = current_loc_row - 1
         elif (self.orientation == Global._north):
@@ -92,7 +92,7 @@ class AgentStateC(CharacterStateA):
         elif (self.orientation == Global._west):
             current_loc_col = current_loc_col - 1
 
-        if Global._display: print ("Action Result:\t\t Moved ", self.orientation, " and now at (", current_loc_col, current_loc_row, ")")
+        if Global._display: print ("Action Result:\t\tAgent is looking to move", self.orientation, "to", (current_loc_col, current_loc_row))
 
         return (current_loc_col, current_loc_row)
 
@@ -101,6 +101,8 @@ class AgentStateC(CharacterStateA):
 
     def turnLeft(self):
 
+        # Update the Agent's orientation based on its current orientation.
+
         if (self.orientation == Global._south):
             self.orientation = Global._east
         elif (self.orientation == Global._north):
@@ -109,14 +111,18 @@ class AgentStateC(CharacterStateA):
             self.orientation = Global._north
         elif (self.orientation == Global._west):
             self.orientation = Global._south
+        else:
+            if Global._display: print ("Error: not expecting an orientation of", self.orientation)
 
-        if Global._display: print ("Action Result:\t\t Currently facing ", self.orientation)
+        if Global._display: print ("Action Result:\t\tAgent has turned left and is now facing", self.orientation)
         
     
     # turnRight
 
     def turnRight(self):
 
+        # Update the Agent's orientation based on its current orientation.
+
         if (self.orientation == Global._south):
             self.orientation = Global._west
         elif (self.orientation == Global._north):
@@ -125,20 +131,8 @@ class AgentStateC(CharacterStateA):
             self.orientation = Global._south
         elif (self.orientation == Global._west):
             self.orientation = Global._north
+        else:
+            if Global._display: print ("Error: not expecting an orientation of", self.orientation)
 
-        if Global._display: print ("Action Result:\t\t Currently facing ", self.orientation)
-
-
-    def shoot(self):
-
-        print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Shoot!!")
-
-    def grab(self):
-
-        print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Grab!!")
-
-    def climb(self):
-
-        print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Climb!!")
-
+        if Global._display: print ("Action Result:\t\tAgent has turned right and is now facing", self.orientation)
 

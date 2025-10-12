@@ -39,11 +39,11 @@ class NaiveAgentC(AgentA):
 
         agent_action = random.randint(0, 5)
 
-        if Global._display: print ("Selected Action:\t", Global._action_set[agent_action])
+        if Global._display: print ("Action:\t\t\t", Global._action_array[agent_action])
         
         # Return the randomly selected action.
 
-        return Global._action_set[agent_action]
+        return Global._action_array[agent_action]
 
 
 

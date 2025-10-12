@@ -25,7 +25,7 @@ class AgentA(ABC):
 
         # Print out the percepts.
 
-        print ("Percepts:\t", end='')
+        print ("Percepts:\t\t", end='')
         self.percepts.print()
 
 

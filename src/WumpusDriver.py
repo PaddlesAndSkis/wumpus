@@ -2,6 +2,8 @@
 
 # Import Project classes.
 
+import Global
+
 from EnvironmentC import EnvironmentC
 from NaiveAgentC import NaiveAgentC
 from GameControllerC import GameControllerC
@@ -10,7 +12,7 @@ from GameControllerC import GameControllerC
 
 def main():
 
-    print ("Ready Player 1")
+    if Global._display: print ("Ready Player 1")
 
     # Initialize the Agent.
 

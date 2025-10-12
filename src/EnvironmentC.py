@@ -134,7 +134,7 @@ class EnvironmentC:
 
                 # Determine if this is the area the Agent is facing north.
 
-                if ((z, y) == (agent_x, agent_y)) and (agent_orientation == Global._north)
+                if ((z, y) == (agent_x, agent_y)) and (agent_orientation == Global._north):
                     print ('  ^    ', end='')
                 else:
                     print ('       ', end='')
@@ -204,7 +204,7 @@ class EnvironmentC:
 
     # get_percepts
 
-    def get_percepts(self) -> PerceptsC
+    def get_percepts(self) -> PerceptsC:
 
         agent_percepts = PerceptsC()
 
@@ -263,6 +263,8 @@ class EnvironmentC:
 
         self.agentState.update_score(-1)
 
+        if Global._display: print ("Action Result:\t\tAgent is currently at", self.agent_location, "facing", self.agentState.get_orientation())
+
         if (action == Global._forward_action):  
             my_actionPercepts = self.__forward_action()
 
@@ -315,7 +317,7 @@ class EnvironmentC:
 
     # __determine_pit_locations
 
-    def __determine_pit_locations(self, occupied_list):
+    def __determine_pit_locations(self, occupied_list) -> []:
 
         pit_list = []
         pit_or_nopit = [ 'P', '-' ]
@@ -337,7 +339,8 @@ class EnvironmentC:
 
     # __forward_action
 
-    def __forward_action(self):
+    def __forward_action(self) -> PerceptsC:
+
         my_actionPercepts = PerceptsC()
 
         candidate_move_loc = self.agentState.forward()
@@ -345,17 +348,23 @@ class EnvironmentC:
         candidate_loc_col = candidate_move_loc[0]
         candidate_loc_row = candidate_move_loc[1]
 
-        print ("Action Result:\t\t Candidate: (", candidate_loc_col, candidate_loc_row,")" )
         if ((candidate_loc_col < 1) or (candidate_loc_col > 4) or 
             (candidate_loc_row < 1) or (candidate_loc_row > 4)):
 
-            print("Action Result:\t\t INVALID MOVE OUT OF BOUNDS")
+            # Invalid forward move.
+
+            if Global._display: print("Action Result:\t\tInvalid forward move (out of bounds).  Agent remains at",self.agent_location)
             my_actionPercepts.set_bump(True)
 
         else:
 
+            # Valid forward move.
+        
             self.agentState.set_location(candidate_move_loc)
             self.agent_location = candidate_move_loc
+
+            if Global._display: print("Action Result:\t\tValid forward move.  Agent is now at", self.agent_location)
+
             self.__determine_forward_fate()
 
         return my_actionPercepts
@@ -366,7 +375,8 @@ class EnvironmentC:
     def __determine_forward_fate(self):
 
         if (self.agent_location in self.pit_locations):
-            print ("Action Result:\t\t AAAAHHHH... FELL INTO A PIT")
+
+            if Global._display: print ("Action Result:\t\t*** Agent has fallen into a pit ***")
             self.agentState.set_isAlive(False)
 
             # The Agent has fallen into a pit.  Update the score -1000.
@@ -376,13 +386,19 @@ class EnvironmentC:
 
         elif ((self.agent_location == self.wumpus_location) and
               (self.wumpusState.get_isAlive())):
-            print ("Action Result:\t\t AAAGGGG.... WUMPUS HAS EATEN THE AGENT")
+
+            if Global._display: print ("Action Result:\t\t*** Agent has been eaten by the Wumpus ***")
             self.agentState.set_isAlive(False)
 
             # The Agent has been eaten by the Wumpus.  Update the score -1000.
 
             self.agentState.update_score(-1000)
+        else:
 
+            # No fate on the Agent moving forward.
+            # Agent can continue.
+
+            pass
 
     # __shoot_action
 
@@ -390,11 +406,14 @@ class EnvironmentC:
 
         my_actionPercepts = PerceptsC()
 
-        if Global._display: print ("Action Result:\t\t HAVE ARROW? ", self.agentState.get_hasArrow())
-        if Global._display: print ("Action Result:\t\t FACING:     ", self.agentState.get_orientation())
+        if Global._display: print ("Action Result:\t\tDoes the Agent have the arrow?", self.agentState.get_hasArrow())
+
+        # If the Agent has the arrow then it can be fired.
+
         if (self.agentState.get_hasArrow()):
 
-            # The arrow has been slung.  Update the score -10.
+            # The arrow has been shot.  Update the score -10.
+            if Global._display: print ("Action Result:\t\tThe Agent has shot the arrow")
 
             self.agentState.update_score(-10)
 
@@ -403,45 +422,45 @@ class EnvironmentC:
             current_loc_col = current_loc[0]
             current_loc_row = current_loc[1]
 
-            shoot_path_rooms = []
+            arrow_flight_path = []
 
-            # Determine the arrow flight path through the cave based on which
+            # Determine the arrow flight path through the cave based on the
             # direction the Agent is facing.
 
             if (orientation == Global._south):
                 # South
 
                 for i in range(current_loc_row-1, 0, -1):
-                    shoot_path_rooms.append((current_loc_col, i))
+                    arrow_flight_path.append((current_loc_col, i))
 
             elif (orientation == Global._north):
                 # North
                 
                 for i in range(current_loc_row+1, 4+1):
-                    shoot_path_rooms.append((current_loc_col, i))
+                    arrow_flight_path.append((current_loc_col, i))
             elif (orientation == Global._east):
                 # East
 
                 for i in range(current_loc_col+1, 4+1):
-                    shoot_path_rooms.append((i, current_loc_row))
+                    arrow_flight_path.append((i, current_loc_row))
             elif (orientation == Global._west):
                 # West
 
                 for i in range(current_loc_col-1, 0, -1):
-                    shoot_path_rooms.append((i, current_loc_row))
+                    arrow_flight_path.append((i, current_loc_row))
                     
             # Iterate over the rooms that are in the shooting path.
 
-            for shoot_location in shoot_path_rooms:
+            for room_location in arrow_flight_path:
 
-                if Global._display: print ("Shoot Room", shoot_location)
+                if Global._display: print ("Action Result:\t\tArrow is travelling through room", room_location, '.. ', end='')
 
                 # Is the Wumpus in this room?
 
-                if (shoot_location == self.wumpus_location):
+                if (room_location == self.wumpus_location):
                    # Yes.
 
-                    if Global._display: print ("Action Result:\t\t WUMPUS HAS BEEN KILLED")
+                    if Global._display: print ("*** The Wumpus has been killed ***")
 
                     # Update the precepts and set the Wumpus alive status to False.
 
@@ -451,11 +470,17 @@ class EnvironmentC:
                 else:
                     # No.
 
-                    if Global._display: print ("Action Result:\t\t NO WUMPUS THERE")
+                    if Global._display: print ("The Wumpus is not in room", room_location)
 
             # Remove the arrow from the Agent state.
 
             self.agentState.set_hasArrow(False)
+
+        else:
+            
+            # The arrow has already been shot.
+            if Global._display: print ("Action Result:\t\tThe Agent has already shot the arrow")
+
 
         # Return the new set of percepts that occurred post-action firing.
 
@@ -469,11 +494,11 @@ class EnvironmentC:
         # Determine if the Gold is in the same room as the Agent.
 
         if (self.agent_location == self.gold_location):
-            if Global._display: print("Action Result:\t\t GOT THE GOLD!!!!")
+            if Global._display: print("Action Result:\t\t*** The Agent has grabbed the gold ***")
             self.agentState.set_hasGold(True)
 
         else:
-            if Global._display: print("Action Result:\t\t NO GOLD HERE!!")
+            if Global._display: print("Action Result:\t\tThere is no gold in room", self.agent_location)
 
 
     # __climb_action
@@ -492,7 +517,7 @@ class EnvironmentC:
 
                 self.agentState.update_score(1000)
 
-                if Global._display: print ("Action Result:\t\t Climbing out with the gold :-) !!")
+                if Global._display: print ("Action Result:\t\t*** The Agent is climbing out with the gold :-) ***")
                 self.agentState.set_hasClimbedOut(True)
 
             else:
@@ -500,18 +525,19 @@ class EnvironmentC:
                 # episode permits its.
 
                 if (self.allowClimbWithoutGold):
-                    if Global._display: print ("Action Result:\t\t Climbing out without the gold :-( ")
+                    if Global._display: print ("Action Result:\t\t*** The Agent is climbing out without the gold :-( ***")
                     self.agentState.set_hasClimbedOut(True)
 
                 else:
-                    if Global._display: print ("Action Result:\t\t Agent cannot climb out without the gold")
+                    if Global._display: print ("Action Result:\t\tThe Agent cannot climb out without the gold")
 
         else:
             # The Agent is not in the original room.
 
-            if Global._display: print ("Action Result:\t\t CAN'T CLIMB OUT - need to be at ", Global._start_room)
+            if Global._display: print ("Action Result:\t\tThe Agent cannot climb out as they are not in the original room", Global._start_room)
 
 
+    # __turnRight_action
 
     def __turnRight_action(self):
 
@@ -519,6 +545,8 @@ class EnvironmentC:
 
         self.agentState.turnRight()
 
+
+    # __turnLeft_action
 
     def __turnLeft_action(self):
 

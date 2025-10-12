@@ -14,13 +14,13 @@ class CharacterStateA:
 
     # Getters and Setters.
 
-    def get_location(self):
+    def get_location(self) -> ():
         return self.location
 
     def set_location(self, location):
         self.location = location
 
-    def get_isAlive(self):
+    def get_isAlive(self) -> bool:
         return self.isAlive
 
     def set_isAlive(self, isAlive):
