@@ -18,7 +18,7 @@ _south = "south"
 _left  = "left"
 _right = "right"
 
-_orientation_array = [ _north, _south, _east, _west]
+_orientation_array = [ _north, _east, _south, _west]
 _facing_array      = [ _left, _right]
 
 # Actions

@@ -92,17 +92,6 @@ class EnvironmentC:
 
     # display_board
 
-                 #           1  2  3  4 
-             #       4
-
-             #       3         A               A = (3, 3)     East  (4, 3)
-             #                                                West  (2, 3)
-             #       2                                        North (3, 4)
-             #                                                South (3, 2)
-             #       1  
-
-
-
     def display_board(self):
         
         print ("The agent score is:\t", self.agentState.get_score())
@@ -119,8 +108,6 @@ class EnvironmentC:
         # Get the orientation of the Agent.
 
         agent_orientation = self.agentState.get_orientation()
-        agent_x = self.agent_location[0]    # Should just be able to use agent_orientation
-        agent_y = self.agent_location[1]
 
         # Draw the y grid starting from height.
 
@@ -134,7 +121,7 @@ class EnvironmentC:
 
                 # Determine if this is the area the Agent is facing north.
 
-                if ((z, y) == (agent_x, agent_y)) and (agent_orientation == Global._north):
+                if ((z, y) == self.agent_location) and (agent_orientation == Global._north):
                     print ('  ^    ', end='')
                 else:
                     print ('       ', end='')
@@ -186,7 +173,7 @@ class EnvironmentC:
                 else:
                     print ('     ', ' ', end='')
 
-            # Draw the sourthern orientation layer.
+            # Draw the southern orientation layer.
              
             print ("\n\t     ", end='')
           
@@ -194,7 +181,7 @@ class EnvironmentC:
 
                 # Determine if this is the area the Agent is facing south.
 
-                if ((z, y) == (agent_x, agent_y)) and (agent_orientation == Global._south):
+                if ((z, y) == self.agent_location) and (agent_orientation == Global._south):
                     print ('  V    ', end='')
                 else:
                     print ('       ', end='')
@@ -283,6 +270,9 @@ class EnvironmentC:
         elif (action == Global._climb_action):
             self.__climb_action()
 
+        else:
+            if Global._display: print ("Invalid action", action)
+
         return my_actionPercepts
 
 
@@ -291,16 +281,18 @@ class EnvironmentC:
 
     # __get_random_coordinate
 
-    def __get_random_coordinate(self, occupied_list):
+    def __get_random_coordinate(self, occupied_list) -> ():
 
         # Get a random coordinate.  Keep trying until the random coordinate
         # is available.
 
         attempts = 0
 
-        while (attempts != 16):
-            random_row = random.randint(1, 4)
-            random_col = random.randint(1, 4)
+        grid_size = self.width * self.height
+
+        while (attempts != grid_size):
+            random_row = random.randint(1, self.height)
+            random_col = random.randint(1, self.width)
 
             if ((random_col, random_row) not in occupied_list):
                 break
@@ -309,7 +301,7 @@ class EnvironmentC:
 
         # Check to see if all points on the board are occupied.
 
-        if (attempts == 16):
+        if (attempts == grid_size):
             random_col, random_row = 0
 
         return (random_col, random_row)
@@ -343,15 +335,19 @@ class EnvironmentC:
 
         my_actionPercepts = PerceptsC()
 
+        # Get the candidate move location from the Agent moving forward.
+        # The move location is only a 'candidate' until the Environment can
+        # ascertain that it is a valid grid location.
+
         candidate_move_loc = self.agentState.forward()
 
         candidate_loc_col = candidate_move_loc[0]
         candidate_loc_row = candidate_move_loc[1]
+        
+        if ((candidate_loc_col < 1) or (candidate_loc_col > self.width) or 
+            (candidate_loc_row < 1) or (candidate_loc_row > self.height)):
 
-        if ((candidate_loc_col < 1) or (candidate_loc_col > 4) or 
-            (candidate_loc_row < 1) or (candidate_loc_row > 4)):
-
-            # Invalid forward move.
+            # Invalid forward move.  Set the Bump percept.
 
             if Global._display: print("Action Result:\t\tInvalid forward move (out of bounds).  Agent remains at",self.agent_location)
             my_actionPercepts.set_bump(True)
@@ -373,6 +369,9 @@ class EnvironmentC:
     # __determine_forward_fate
 
     def __determine_forward_fate(self):
+
+        # Determine if the move forward action by the Agent has resulted in running into a
+        # pit or an alive Wumpus.
 
         if (self.agent_location in self.pit_locations):
 
@@ -399,6 +398,7 @@ class EnvironmentC:
             # Agent can continue.
 
             pass
+
 
     # __shoot_action
 

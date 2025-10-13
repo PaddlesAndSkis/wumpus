@@ -103,16 +103,8 @@ class AgentStateC(CharacterStateA):
 
         # Update the Agent's orientation based on its current orientation.
 
-        if (self.orientation == Global._south):
-            self.orientation = Global._east
-        elif (self.orientation == Global._north):
-            self.orientation = Global._west
-        elif (self.orientation == Global._east):
-            self.orientation = Global._north
-        elif (self.orientation == Global._west):
-            self.orientation = Global._south
-        else:
-            if Global._display: print ("Error: not expecting an orientation of", self.orientation)
+        orientation_index = Global._orientation_array.index(self.orientation)
+        self.orientation = Global._orientation_array[orientation_index-1]
 
         if Global._display: print ("Action Result:\t\tAgent has turned left and is now facing", self.orientation)
         
@@ -123,16 +115,17 @@ class AgentStateC(CharacterStateA):
 
         # Update the Agent's orientation based on its current orientation.
 
-        if (self.orientation == Global._south):
-            self.orientation = Global._west
-        elif (self.orientation == Global._north):
-            self.orientation = Global._east
-        elif (self.orientation == Global._east):
-            self.orientation = Global._south
-        elif (self.orientation == Global._west):
-            self.orientation = Global._north
-        else:
-            if Global._display: print ("Error: not expecting an orientation of", self.orientation)
+        orientation_index = Global._orientation_array.index(self.orientation)
+        right_index = orientation_index + 1
+
+        # Unlike the turnRight method, an index larger than the array is an out
+        # of bounds error.  Check for this condition (len will be the index of the
+        # out of bounds as array starts at 0).
+
+        if (right_index == len(Global._orientation_array)):
+            right_index = 0
+
+        self.orientation = Global._orientation_array[right_index]
 
         if Global._display: print ("Action Result:\t\tAgent has turned right and is now facing", self.orientation)
 
