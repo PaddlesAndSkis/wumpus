@@ -24,30 +24,30 @@ class EnvironmentC:
         self.allowClimbWithoutGold = allowClimbWithoutGold
         self.pitProb = pitProb
 
-        # Create an occupied_list array.
+        # Create an array to keep track of which rooms are not available.
 
-        occupied_list = []
+        unavailable_rooms_array = []
 
-        # Initialize the Agent and add its location to the occupied list.
+        # Initialize the Agent and add its location to the unavailable rooms list.
     
         self.agent_location = (1, 1)
         self.agentState = AgentStateC(self.agent_location)
-        occupied_list.append(self.agent_location)
+        unavailable_rooms_array.append(self.agent_location)
 
-        # Initialize the location of the Wumpus and add its location to the occupied list.
+        # Initialize the location of the Wumpus and add its location to the unavailable rooms list (maybe future).
 
-        self.wumpus_location = self.__get_random_coordinate(occupied_list)
+        self.wumpus_location = self.__get_random_coordinate(unavailable_rooms_array)
         self.wumpusState = WumpusStateC(self.wumpus_location)
-        occupied_list.append(self.wumpus_location)
+        # unavailable_rooms_array.append(self.wumpus_location)
 
-        # Initialize the location of the Gold and add its location to the occupied list.
+        # Initialize the location of the Gold and add its location to the unavailable rooms list (maybe future).
 
-        self.gold_location = self.__get_random_coordinate(occupied_list)
-        occupied_list.append(self.gold_location)
+        self.gold_location = self.__get_random_coordinate(unavailable_rooms_array)
+        # unavailable_rooms_array.append(self.gold_location)
 
-        # Initialize the location of the pits based on the occupied list.
+        # Initialize the location of the pits based on the unavailable list (currently, just the Agent).
 
-        self.pit_locations = self.__determine_pit_locations(occupied_list)
+        self.pit_locations = self.__determine_pit_locations(unavailable_rooms_array)
 
 
     # is_active_episode
@@ -281,7 +281,7 @@ class EnvironmentC:
 
     # __get_random_coordinate
 
-    def __get_random_coordinate(self, occupied_list) -> ():
+    def __get_random_coordinate(self, unavailable_rooms_array) -> ():
 
         # Get a random coordinate.  Keep trying until the random coordinate
         # is available.
@@ -294,12 +294,12 @@ class EnvironmentC:
             random_row = random.randint(1, self.height)
             random_col = random.randint(1, self.width)
 
-            if ((random_col, random_row) not in occupied_list):
+            if ((random_col, random_row) not in unavailable_rooms_array):
                 break
 
             attempts = attempts + 1
 
-        # Check to see if all points on the board are occupied.
+        # Check to see if all points on the board are unavailable.
 
         if (attempts == grid_size):
             random_col, random_row = 0
@@ -309,7 +309,7 @@ class EnvironmentC:
 
     # __determine_pit_locations
 
-    def __determine_pit_locations(self, occupied_list) -> []:
+    def __determine_pit_locations(self, unavailable_rooms_array) -> []:
 
         pit_list = []
         pit_or_nopit = [ 'P', '-' ]
@@ -319,7 +319,7 @@ class EnvironmentC:
 
             for j in range(1, self.width+1):
 
-                if ((i, j) not in occupied_list):
+                if ((i, j) not in unavailable_rooms_array):
 
                     pit = random.choices(pit_or_nopit, weights=pit_probabilities, k=1)[0]
 

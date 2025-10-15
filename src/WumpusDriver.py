@@ -6,7 +6,7 @@ import Global
 
 from EnvironmentC import EnvironmentC
 from NaiveAgentC import NaiveAgentC
-from GameControllerC import GameControllerC
+from EpisodeControllerC import EpisodeControllerC
 
 # main
 
@@ -24,8 +24,8 @@ def main():
 
     # Initialize the game controller and play the episode.
 
-    gameController = GameControllerC(myAgent, myEnvironment)
-    gameController.playEpisode()
+    episodeController = EpisodeControllerC(myAgent, myEnvironment)
+    episodeController.playEpisode()
 
 
 

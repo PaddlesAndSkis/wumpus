@@ -1,4 +1,4 @@
-# GameControllerC.py
+# EpisodeControllerC.py
 
 # Import Project classes.
 
@@ -8,13 +8,13 @@ from AgentA import AgentA
 from EnvironmentC import EnvironmentC
 
 
-class GameControllerC():
+class EpisodeControllerC():
     
     # Constructor.
 
     def __init__(self, agent, environment):
         
-        # The Game Controller requires an Agent and an Environment.
+        # The Episode Controller requires an Agent and an Environment.
 
         self.agent = agent
         self.environment = environment
@@ -30,9 +30,15 @@ class GameControllerC():
 
         # Execute the episode until it is no longer active.
 
+        agent_move = 0
+        
         while (self.environment.is_active_episode()):
 
-            if Global._display: print (">>--------------------")
+            # Increase the agent_move to track the number of movements in the episode.
+            
+            agent_move = agent_move + 1
+            
+            if Global._display: print (">>----- Agent Move", agent_move, "----->>")
             
             # Get the pre-action Percepts to notify the Agent.
 
@@ -61,4 +67,4 @@ class GameControllerC():
 
         # Print the final score for the Agent.
 
-        print ("Episode Complete: the Agent's final score is: ", self.environment.get_Agent_Score())
+        print ("Episode Complete: the Agent's final score is:", self.environment.get_Agent_Score(), "in", agent_move, "moves.")
