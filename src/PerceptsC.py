@@ -4,7 +4,7 @@ class PerceptsC():
 
     # Constructor
 
-    def __init__(self, stench=False, breeze=False, glitter=False, bump=False, scream=False):
+    def __init__(self, stench=False, breeze=False, glitter=False, bump=False, scream=False, move=()):
 
         # Set object attributes.
 
@@ -13,6 +13,7 @@ class PerceptsC():
         self.glitter = glitter
         self.bump = bump
         self.scream = scream
+        self.move = move
 
 
     # Getters and Setters.
@@ -48,6 +49,13 @@ class PerceptsC():
         self.scream = scream
 
 
+    def get_move(self) -> tuple([int, int]):
+        return self.move
+
+    def set_move(self, move):
+        self.move = move
+
+
     # print
 
     def print(self):
@@ -70,6 +78,9 @@ class PerceptsC():
 
         if (self.get_scream()):
             percepts_list.append("Scream")
+
+        if (self.get_move()):
+            percepts_list.append("Move")
 
         print (percepts_list)
 

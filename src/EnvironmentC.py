@@ -281,7 +281,7 @@ class EnvironmentC:
 
     # __get_random_coordinate
 
-    def __get_random_coordinate(self, unavailable_rooms_array) -> ():
+    def __get_random_coordinate(self, unavailable_rooms_array) -> tuple([int, int]):
 
         # Get a random coordinate.  Keep trying until the random coordinate
         # is available.
@@ -309,7 +309,7 @@ class EnvironmentC:
 
     # __determine_pit_locations
 
-    def __determine_pit_locations(self, unavailable_rooms_array) -> []:
+    def __determine_pit_locations(self, unavailable_rooms_array) -> list [(int, int)]:
 
         pit_list = []
         pit_or_nopit = [ 'P', '-' ]
@@ -358,6 +358,7 @@ class EnvironmentC:
         
             self.agentState.set_location(candidate_move_loc)
             self.agent_location = candidate_move_loc
+            my_actionPercepts.set_move(candidate_move_loc)
 
             if Global._display: print("Action Result:\t\tValid forward move.  Agent is now at", self.agent_location)
 
