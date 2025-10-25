@@ -17,12 +17,16 @@ def main():
 
     # Add the new node.
 
-    new_node = (2, 1)
-    add_node(start_node, new_node, direction)
+    move1_node = (2, 1)
+    add_node(start_node, move1_node, direction)
 
-    next_node = (2, 2)
+    move2_node = (2, 2)
     direction = "north"
-    add_node(new_node, next_node, direction)
+    add_node(move1_node, move2_node, direction)
+
+    move3_node = (2, 3)
+    direction = "north"
+    add_node(move2_node, move3_node, direction)
 
 
     # Print the nodes and edges.
@@ -30,11 +34,18 @@ def main():
     print ("\nNodes:", G.nodes)
     print ("\nEdges:", G.edges)
 
-    source_node = str(next_node) + "-north"
-    dest_node = str(start_node) + "-east"
+    source = move3_node
+    dest   = start_node
 
-    print ("\nShortest Dijkstra path:", nx.shortest_path(G, source_node, dest_node, weight=None, method='dijkstra'))
-    print ("\nShortest A* path:", nx.astar_path(G, source_node, dest_node, heuristic=None, weight='weight'))
+    create_exit_plan(source, dest)
+    
+
+    # Once you reach (1, 1) you can climb out - don't need to go from West to North to East.
+    # That is what is meant in the assignment where you can remove the last few turns in the list
+    # as they are superfluous.
+
+    # Need to keep track of the actions that went through the graph.  Store them in the nodes?
+
 
 def add_new_node_works(current_node, direction):
 
@@ -67,28 +78,28 @@ def add_new_node_works(current_node, direction):
 
     # Add edges.
 
-    G.add_edge(a_node_north, a_node_west,  turn="left")
-    G.add_edge(a_node_north, a_node_east,  turn="right")
-    G.add_edge(a_node_east,  a_node_north, turn="left")
-    G.add_edge(a_node_east,  a_node_south, turn="right")
-    G.add_edge(a_node_south, a_node_east,  turn="left")
-    G.add_edge(a_node_south, a_node_west,  turn="right")
-    G.add_edge(a_node_west,  a_node_south, turn="left")
-    G.add_edge(a_node_west,  a_node_north, turn="right")
+    G.add_edge(a_node_north, a_node_west,  action="TurnLeft")
+    G.add_edge(a_node_north, a_node_east,  action="right")
+    G.add_edge(a_node_east,  a_node_north, action="TurnLeft")
+    G.add_edge(a_node_east,  a_node_south, action="right")
+    G.add_edge(a_node_south, a_node_east,  action="TurnLeft")
+    G.add_edge(a_node_south, a_node_west,  action="right")
+    G.add_edge(a_node_west,  a_node_south, action="TurnLeft")
+    G.add_edge(a_node_west,  a_node_north, action="right")
 
-    G.add_edge(b_node_north, b_node_west,  turn="left")
-    G.add_edge(b_node_north, b_node_east,  turn="right")
-    G.add_edge(b_node_east,  b_node_north, turn="left")
-    G.add_edge(b_node_east,  b_node_south, turn="right")
-    G.add_edge(b_node_south, b_node_east,  turn="left")
-    G.add_edge(b_node_south, b_node_west,  turn="right")
-    G.add_edge(b_node_west,  b_node_south, turn="left")
-    G.add_edge(b_node_west,  b_node_north, turn="right")
+    G.add_edge(b_node_north, b_node_west,  action="TurnLeft")
+    G.add_edge(b_node_north, b_node_east,  action="right")
+    G.add_edge(b_node_east,  b_node_north, action="TurnLeft")
+    G.add_edge(b_node_east,  b_node_south, action="right")
+    G.add_edge(b_node_south, b_node_east,  action="TurnLeft")
+    G.add_edge(b_node_south, b_node_west,  action="right")
+    G.add_edge(b_node_west,  b_node_south, action="TurnLeft")
+    G.add_edge(b_node_west,  b_node_north, action="right")
 
     # Forward
 
-    G.add_edge(a_node_east,  b_node_east,  turn="forward")
-    G.add_edge(b_node_west,  a_node_west,  turn="forward")
+    G.add_edge(a_node_east,  b_node_east,  action="forward")
+    G.add_edge(b_node_west,  a_node_west,  action="forward")
 
 
 
@@ -130,16 +141,16 @@ def add_node(current_node, new_node, direction):
     G.add_node(node_east,  node=new_node, direction="east")
     G.add_node(node_west,  node=new_node, direction="west")
 
-    # Add edges.
+    # Add edges and the action that would get you there.
 
-    G.add_edge(node_north, node_west,  turn="left")
-    G.add_edge(node_north, node_east,  turn="right")
-    G.add_edge(node_east,  node_north, turn="left")
-    G.add_edge(node_east,  node_south, turn="right")
-    G.add_edge(node_south, node_east,  turn="left")
-    G.add_edge(node_south, node_west,  turn="right")
-    G.add_edge(node_west,  node_south, turn="left")
-    G.add_edge(node_west,  node_north, turn="right")
+    G.add_edge(node_north, node_west,  action="TurnLeft")
+    G.add_edge(node_north, node_east,  action="TurnRight")
+    G.add_edge(node_east,  node_north, action="TurnLeft")
+    G.add_edge(node_east,  node_south, action="TurnRight")
+    G.add_edge(node_south, node_east,  action="TurnLeft")
+    G.add_edge(node_south, node_west,  action="TurnRight")
+    G.add_edge(node_west,  node_south, action="TurnLeft")
+    G.add_edge(node_west,  node_north, action="TurnRight")
 
     # Forward
 
@@ -154,20 +165,59 @@ def add_node(current_node, new_node, direction):
         current_west  = str(current_node) + "-west"
 
         if (direction == "north"):
-            G.add_edge(current_north,  node_north,  turn="forward")
-            G.add_edge(node_south,  current_south,  turn="forward")
+            G.add_edge(current_north,  node_north,  action="Forward")
+            G.add_edge(node_south,  current_south,  action="Forward")
         elif (direction == "east"):
-            G.add_edge(current_east,  node_east,  turn="forward")
-            G.add_edge(node_west,  current_west,  turn="forward")
+            G.add_edge(current_east,  node_east,  action="Forward")
+            G.add_edge(node_west,  current_west,  action="Forward")
         elif (direction == "south"):
-            G.add_edge(current_south,  node_south,  turn="forward")
-            G.add_edge(node_north,  current_north,  turn="forward")
+            G.add_edge(current_south,  node_south,  action="Forward")
+            G.add_edge(node_north,  current_north,  action="Forward")
         elif (direction == "west"):
-            G.add_edge(current_west,  node_west,  turn="forward")
-            G.add_edge(node_east,  current_east,  turn="forward")
+            G.add_edge(current_west,  node_west,  action="Forward")
+            G.add_edge(node_east,  current_east,  action="Forward")
 
 
+def create_exit_plan(source, dest):
 
+    source_node = str(source) + "-north"
+    dest_node = str(dest) + "-east"
+
+    print ("\nShortest Dijkstra path:", nx.shortest_path(G, source_node, dest_node, weight=None, method='dijkstra'))
+    print ("\nShortest A* path:", nx.astar_path(G, source_node, dest_node, heuristic=None, weight='manhattan_distance'))
+
+    short_path = nx.astar_path(G, source_node, dest_node, heuristic=None, weight='manhattan_distance')
+
+    # Print out the nodes.
+
+    for node in short_path:
+
+        print (G.nodes[node]["node"], " ", G.nodes[node]["direction"])
+
+    # Build the edges from the path.
+
+    path_edges = []
+    
+    for i in range(len(short_path) - 1):
+        u = short_path[i]
+        v = short_path[i+1]
+        path_edges.append((u, v))
+
+    action_plan = []
+
+    # Iterate through the edges to build the action plan by finding the edge in the graph's
+    # set of edges and getting the associated "action" with that particular edge.
+    #
+    # As this is a directed graph, and when we added the next set of nodes the directions between
+    # the nodes were bi-directional (e.g., North-West = Left and West-North = Right), the
+    # action associated with that edge will be the correct action to take to traverse that edge
+    # from the current node to the next node in the edge pair.
+
+    for edge in path_edges:
+        print (edge, " ", G.edges[edge]["action"])
+        action_plan.append(G.edges[edge]["action"])
+
+    print ("The agent's action plan:", action_plan)
 
 # Test graph.
 
