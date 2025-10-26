@@ -219,6 +219,21 @@ def create_exit_plan(source, dest):
 
     print ("The agent's action plan:", action_plan)
 
+    print ("len: ", len(action_plan))
+    if (len(action_plan) > 0):
+
+        print ("Exit plan    : ", action_plan)
+
+        action = action_plan[0]
+
+        print ("Action: ", action)
+
+        action_plan.pop(0)
+
+        print ("Exit plan now: ", action_plan)
+
+
+
 # Test graph.
 
 main()

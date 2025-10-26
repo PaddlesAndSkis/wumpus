@@ -359,6 +359,7 @@ class EnvironmentC:
             self.agentState.set_location(candidate_move_loc)
             self.agent_location = candidate_move_loc
             my_actionPercepts.set_move(candidate_move_loc)
+            my_actionPercepts.set_direction(self.agentState.get_orientation())
 
             if Global._display: print("Action Result:\t\tValid forward move.  Agent is now at", self.agent_location)
 
