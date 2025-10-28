@@ -13,6 +13,7 @@ from AgentA import AgentA
 
 class MovePlanningAgentC(AgentA):
     
+    # Constructor.
 
     def __init__(self, location):
 
@@ -37,7 +38,9 @@ class MovePlanningAgentC(AgentA):
     def percept(self, percepts):
 
         # For the Move Planning Agent, it will use the Percepts for grabbing the gold and
-        # climbing out of the cave.
+        # climbing out of the cave.  As it also uses the Percepts for detecting a Bump when
+        # trying to go out of bounds, it will also use the Percepts to detect that a valid
+        # move has been made.
 
         # Call the super class to register the percepts.
 
@@ -68,14 +71,25 @@ class MovePlanningAgentC(AgentA):
  
         action = None
 
-        print ("SELF EXIT PLAN ", self.exit_plan)
+        # The Agent is either exploring, looking for the Gold or the Agent has
+        # found it and is executing on its exit plan.
+
+        # Determine if the Agent is exploring or executing its exit plan.
+
         if (len(self.exit_plan) > 0):
+
+            # The Agent is executing its exit plan.  Therefore, get the next
+            # action in the plan.
+
+            if Global._display: print ("Status:\t\t\t*** Agent is currently executing its exit plan...")
 
             print ("Exit plan    : ", self.exit_plan)
 
             action = self.exit_plan[0]
 
             print ("Action: ", action)
+
+            # Remove the action from the exit plan.
 
             self.exit_plan.pop(0)
 
@@ -87,8 +101,12 @@ class MovePlanningAgentC(AgentA):
             # For the Move Planning Agent, use its sensors to read the percepts to see if the gold 
             # is in the current room or if they can climb out the cave with the gold.
 
+            if Global._display: print ("Status:\t\t\t*** Agent is currently exploring looking for Gold...")
+
             if (self.percepts.get_glitter()) and (self.has_gold == False):
 
+                if Global._display: print ("Status:\t\t\t*** Agent has detected the Gold and will now grab it...")
+    
                 print ("****** ATTEMPTING TO GLITTER ********")
                 print ("****** ATTEMPTING TO GLITTER ********")
                 print ("****** ATTEMPTING TO GLITTER ********")
@@ -107,6 +125,10 @@ class MovePlanningAgentC(AgentA):
                 self.exit_plan = self.__create_exit_plan(self.location, (1, 1), self.direction)
 
             elif (self.location == Global._start_room) and (self.has_gold == True):
+
+                # TBD:  I DON"T THINK THIS GETS CALLED ANY MORE SINCE THE CLIMB ACTION IS
+                # ONLY DONE IN THE EXIT PLAN.  THE ENVIRONMENT WILL PREVENT THE AGENT FROM
+                # CLIMING OUT IF IT"S NOT IN THE CORRECT START ROOM.
 
                 # Climb out!
 
@@ -147,6 +169,9 @@ class MovePlanningAgentC(AgentA):
 
     def __add_node_to_graph(self, current_node, new_node, direction):
 
+        # Add four nodes to the graph, one for each direction the Agent
+        # can face - north, east, south and west.
+
         node_north = str(new_node) + "-" + Global._north
         node_south = str(new_node) + "-" + Global._south
         node_east  = str(new_node) + "-" + Global._east
@@ -157,7 +182,7 @@ class MovePlanningAgentC(AgentA):
         self.G.add_node(node_east,  node=new_node, direction=Global._east)
         self.G.add_node(node_west,  node=new_node, direction=Global._west)
 
-        # Add edges and the action that would get you there.
+        # Add the edges between the nodes and the action that would get you there.
 
         self.G.add_edge(node_north, node_west,  action=Global._turnLeft_action)
         self.G.add_edge(node_north, node_east,  action=Global._turnRight_action)
@@ -168,17 +193,23 @@ class MovePlanningAgentC(AgentA):
         self.G.add_edge(node_west,  node_south, action=Global._turnLeft_action)
         self.G.add_edge(node_west,  node_north, action=Global._turnRight_action)
 
-        # Forward
+        # Adding the Forward edges if there are two different nodes (i.e., not the
+        # initial start node).
 
         if (current_node != new_node):
 
-            # Add the Forward direction.  North will point North and the
-            # opposite will be true.
+            # Add the Forward direction.  The direction of the node will point
+            # to the same direction of the new node and the opposite will be true.
+            # e.g., (1,1)-East will have an edge with (2,1)-East and (2,1)-West will
+            # have an edge with (1,1)-West.
 
             current_north = str(current_node) + "-" + Global._north
             current_south = str(current_node) + "-" + Global._south
             current_east  = str(current_node) + "-" + Global._east
             current_west  = str(current_node) + "-" + Global._west
+
+            # Determine the current direction and add the edges as indicated above in
+            # the comment.
 
             if (direction == Global._north):
                 self.G.add_edge(current_north,  node_north,  action=Global._forward_action)
@@ -194,19 +225,21 @@ class MovePlanningAgentC(AgentA):
                 self.G.add_edge(node_east,  current_east,  action=Global._forward_action)
 
 
-        print ("\nNodes:", self.G.nodes)
-        print ("\nEdges:", self.G.edges)
+        if Global._display: print ("\nNodes:", self.G.nodes)
+        if Global._display: print ("\nEdges:", self.G.edges)
 
 
     # __create_exit_plan
 
     def __create_exit_plan(self, source, dest, direction):
-
+        
         source_node = str(source) + "-" + direction
         dest_node = str(dest) + "-" + Global._east
 
-        print ("\nShortest Dijkstra path:", nx.shortest_path(self.G, source_node, dest_node, weight=None, method='dijkstra'))
-        print ("\nShortest A* path:", nx.astar_path(self.G, source_node, dest_node, heuristic=None, weight='manhattan_distance'))
+        if Global._display: print ("Status:\t\t\t*** Agent is creating an exit plan from", source_node, "to", dest)
+
+        if Global._display: print ("\nShortest Dijkstra path:", nx.shortest_path(self.G, source_node, dest_node, weight=None, method='dijkstra'))
+        if Global._display: print ("\nShortest A* path:", nx.astar_path(self.G, source_node, dest_node, heuristic=None, weight='manhattan_distance'))
 
         short_path = nx.astar_path(self.G, source_node, dest_node, heuristic=None, weight='manhattan_distance')
 
@@ -256,6 +289,6 @@ class MovePlanningAgentC(AgentA):
 
         action_plan.append(Global._climb_action)
 
-        print ("The agent's action plan:", action_plan)
+        if Global._display: print ("Status:\t\t\t*** The Agent's exit plan is:", action_plan)
 
         return action_plan
