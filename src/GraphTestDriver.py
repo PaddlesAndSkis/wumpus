@@ -194,13 +194,26 @@ def create_exit_plan(source, dest):
 
         print (G.nodes[node]["node"], " ", G.nodes[node]["direction"])
 
+    # The Agent only has to reach (1,1) in order to climb out,  Therefore, remove all
+    # other nodes past the first (1,1) in the path.
+
+    first_home = next(filter(lambda node: "(1, 1)" in node, short_path), None)
+
+    idx = short_path.index(first_home)
+
+    print ("Index of (1,1) is: ", first_home, "at", idx)
+
+    new_short_path = short_path[:idx+1]
+
+    print ("new short_path =", new_short_path)
+
     # Build the edges from the path.
 
     path_edges = []
     
-    for i in range(len(short_path) - 1):
-        u = short_path[i]
-        v = short_path[i+1]
+    for i in range(len(new_short_path) - 1):
+        u = new_short_path[i]
+        v = new_short_path[i+1]
         path_edges.append((u, v))
 
     action_plan = []

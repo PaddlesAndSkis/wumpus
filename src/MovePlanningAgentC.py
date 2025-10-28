@@ -29,7 +29,7 @@ class MovePlanningAgentC(AgentA):
         # Add the initial location as the root of the path tree.
 
         self.G = nx.DiGraph()
-        self.__create_initial_node(self.location, self.direction)
+        self.__create_start_node_in_graph(self.location, self.direction)
         
 
     # percept
@@ -48,9 +48,9 @@ class MovePlanningAgentC(AgentA):
 
         if (len(new_location) != 0):
 
-            # Add the new node.
+            # Add the new node to the graph.
 
-            self.__add_node(self.location, new_location, direction)
+            self.__add_node_to_graph(self.location, new_location, direction)
             
             # Update the Agent's location and direction.
 
@@ -136,35 +136,37 @@ class MovePlanningAgentC(AgentA):
     # Private methods.
 
 
+    # __create_start_node_in_graph
     
-    def __create_initial_node(self, start_node, direction):
+    def __create_start_node_in_graph(self, start_node, direction):
 
-        self.__add_node(start_node, start_node, direction)
+        self.__add_node_to_graph(start_node, start_node, direction)
 
 
+    # __add_node
 
-    def __add_node(self, current_node, new_node, direction):
+    def __add_node_to_graph(self, current_node, new_node, direction):
 
-        node_north = str(new_node) + "-north"
-        node_south = str(new_node) + "-south"
-        node_east  = str(new_node) + "-east"
-        node_west  = str(new_node) + "-west"
+        node_north = str(new_node) + "-" + Global._north
+        node_south = str(new_node) + "-" + Global._south
+        node_east  = str(new_node) + "-" + Global._east
+        node_west  = str(new_node) + "-" + Global._west
 
-        self.G.add_node(node_north, node=new_node, direction="north")
-        self.G.add_node(node_south, node=new_node, direction="south")
-        self.G.add_node(node_east,  node=new_node, direction="east")
-        self.G.add_node(node_west,  node=new_node, direction="west")
+        self.G.add_node(node_north, node=new_node, direction=Global._north)
+        self.G.add_node(node_south, node=new_node, direction=Global._south)
+        self.G.add_node(node_east,  node=new_node, direction=Global._east)
+        self.G.add_node(node_west,  node=new_node, direction=Global._west)
 
         # Add edges and the action that would get you there.
 
-        self.G.add_edge(node_north, node_west,  action="TurnLeft")
-        self.G.add_edge(node_north, node_east,  action="TurnRight")
-        self.G.add_edge(node_east,  node_north, action="TurnLeft")
-        self.G.add_edge(node_east,  node_south, action="TurnRight")
-        self.G.add_edge(node_south, node_east,  action="TurnLeft")
-        self.G.add_edge(node_south, node_west,  action="TurnRight")
-        self.G.add_edge(node_west,  node_south, action="TurnLeft")
-        self.G.add_edge(node_west,  node_north, action="TurnRight")
+        self.G.add_edge(node_north, node_west,  action=Global._turnLeft_action)
+        self.G.add_edge(node_north, node_east,  action=Global._turnRight_action)
+        self.G.add_edge(node_east,  node_north, action=Global._turnLeft_action)
+        self.G.add_edge(node_east,  node_south, action=Global._turnRight_action)
+        self.G.add_edge(node_south, node_east,  action=Global._turnLeft_action)
+        self.G.add_edge(node_south, node_west,  action=Global._turnRight_action)
+        self.G.add_edge(node_west,  node_south, action=Global._turnLeft_action)
+        self.G.add_edge(node_west,  node_north, action=Global._turnRight_action)
 
         # Forward
 
@@ -173,33 +175,35 @@ class MovePlanningAgentC(AgentA):
             # Add the Forward direction.  North will point North and the
             # opposite will be true.
 
-            current_north = str(current_node) + "-north"
-            current_south = str(current_node) + "-south"
-            current_east  = str(current_node) + "-east"
-            current_west  = str(current_node) + "-west"
+            current_north = str(current_node) + "-" + Global._north
+            current_south = str(current_node) + "-" + Global._south
+            current_east  = str(current_node) + "-" + Global._east
+            current_west  = str(current_node) + "-" + Global._west
 
-            if (direction == "north"):
-                self.G.add_edge(current_north,  node_north,  action="Forward")
-                self.G.add_edge(node_south,  current_south,  action="Forward")
-            elif (direction == "east"):
-                self.G.add_edge(current_east,  node_east,  action="Forward")
-                self.G.add_edge(node_west,  current_west,  action="Forward")
-            elif (direction == "south"):
-                self.G.add_edge(current_south,  node_south,  action="Forward")
-                self.G.add_edge(node_north,  current_north,  action="Forward")
-            elif (direction == "west"):
-                self.G.add_edge(current_west,  node_west,  action="Forward")
-                self.G.add_edge(node_east,  current_east,  action="Forward")
+            if (direction == Global._north):
+                self.G.add_edge(current_north,  node_north,  action=Global._forward_action)
+                self.G.add_edge(node_south,  current_south,  action=Global._forward_action)
+            elif (direction == Global._east):
+                self.G.add_edge(current_east,  node_east,  action=Global._forward_action)
+                self.G.add_edge(node_west,  current_west,  action=Global._forward_action)
+            elif (direction == Global._south):
+                self.G.add_edge(current_south,  node_south,  action=Global._forward_action)
+                self.G.add_edge(node_north,  current_north,  action=Global._forward_action)
+            elif (direction == Global._west):
+                self.G.add_edge(current_west,  node_west,  action=Global._forward_action)
+                self.G.add_edge(node_east,  current_east,  action=Global._forward_action)
 
 
         print ("\nNodes:", self.G.nodes)
         print ("\nEdges:", self.G.edges)
 
 
+    # __create_exit_plan
+
     def __create_exit_plan(self, source, dest, direction):
 
         source_node = str(source) + "-" + direction
-        dest_node = str(dest) + "-east"
+        dest_node = str(dest) + "-" + Global._east
 
         print ("\nShortest Dijkstra path:", nx.shortest_path(self.G, source_node, dest_node, weight=None, method='dijkstra'))
         print ("\nShortest A* path:", nx.astar_path(self.G, source_node, dest_node, heuristic=None, weight='manhattan_distance'))
@@ -212,13 +216,26 @@ class MovePlanningAgentC(AgentA):
 
             print (self.G.nodes[node]["node"], " ", self.G.nodes[node]["direction"])
 
+        # The Agent only has to reach (1,1) in order to climb out,  Therefore, remove all
+        # other nodes past the first (1,1) in the path.
+
+        first_home_node = next(filter(lambda node: "(1, 1)" in node, short_path), None)
+
+        first_home_node_idx = short_path.index(first_home_node)
+
+        print ("Index of (1,1) is: ", first_home_node, "at", first_home_node_idx)
+
+        new_short_path = short_path[:first_home_node_idx+1]
+
+        print ("new short_path =", new_short_path)
+
         # Build the edges from the path.
 
         path_edges = []
     
-        for i in range(len(short_path) - 1):
-            u = short_path[i]
-            v = short_path[i+1]
+        for i in range(len(new_short_path) - 1):
+            u = new_short_path[i]
+            v = new_short_path[i+1]
             path_edges.append((u, v))
 
         action_plan = []
@@ -237,62 +254,8 @@ class MovePlanningAgentC(AgentA):
 
         # Finally, append the Climb action.
 
-        action_plan.append("Climb")
+        action_plan.append(Global._climb_action)
 
         print ("The agent's action plan:", action_plan)
 
         return action_plan
-
-
-
-    def __add_initial_node(self, initial_location):
-
-        # Add the 4 nodes.
-
-        self.path_tree.add_node(initial_location, direction=Global._north)
-        self.path_tree.add_node(initial_location, direction=Global._east)
-        self.path_tree.add_node(initial_location, direction=Global._south)
-        self.path_tree.add_node(initial_location, direction=Global._west)
-
-        # Add the 8 edges.
-        attributes.get("direction") == target_name
-
-        self.path_tree.add_edge(self.location, new_location)
-        self.path_tree.add_edge(self.location, new_location)
-        self.path_tree.add_edge(self.location, new_location)
-        self.path_tree.add_edge(self.location, new_location)
-        self.path_tree.add_edge(self.location, new_location)
-        self.path_tree.add_edge(self.location, new_location)
-        self.path_tree.add_edge(self.location, new_location)
-        self.path_tree.add_edge(self.location, new_location)
-
-
-
-
-    def __add_node_to_path(self, new_location):
-
-        self.path_tree.add_node(new_location)
-        self.path_tree.add_edge(self.location, new_location)
-
-        if Global._display: 
-            print ("Added node:", new_location)
-            print ("Added edge:", self.location, " ", new_location)
-
-            print ("Nodes now:", self.path_tree.nodes)
-            print ("Edges now:", self.path_tree.edges)
-
-        self.location = new_location
-
-      #  G.add_node((1,1))
-      #  G.add_node((1,2))
-
-      #  G.add_edge((1,1),(1,2))
-
-      #  print (G.nodes)
-      #  print (G.edges)
-
-
-
-
-
-
