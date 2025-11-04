@@ -49,9 +49,13 @@ class MovePlanningAgentC(AgentA):
         new_location = self.percepts.get_move()
         direction    = self.percepts.get_direction()
 
+        # Determine if a move has been made.
+
         if (len(new_location) != 0):
 
-            # Add the new node to the graph.
+            # A move has been made, add the new node to the graph.
+                    
+            if Global._display: print ("Action Result:\t\tLooking to add", new_location, "facing", direction, "(and other directions) to the visited room graph.")
 
             self.__add_node_to_graph(self.location, new_location, direction)
             
@@ -83,17 +87,19 @@ class MovePlanningAgentC(AgentA):
 
             if Global._display: print ("Status:\t\t\t*** Agent is currently executing its exit plan...")
 
-            print ("Exit plan    : ", self.exit_plan)
+            if Global._display: print ("Exit plan:\t\t\t", self.exit_plan)
+
+            # Get the next action to take.
 
             action = self.exit_plan[0]
 
-            print ("Action: ", action)
+            if Global._display: print ("Action from Exit plan:\t\t", action)
 
             # Remove the action from the exit plan.
 
             self.exit_plan.pop(0)
 
-            print ("Exit plan now: ", self.exit_plan)
+            if Global._display: print ("Exit plan after action:\t\t", self.exit_plan)
 
         
         else:
@@ -107,10 +113,6 @@ class MovePlanningAgentC(AgentA):
 
                 if Global._display: print ("Status:\t\t\t*** Agent has detected the Gold and will now grab it...")
     
-                print ("****** ATTEMPTING TO GLITTER ********")
-                print ("****** ATTEMPTING TO GLITTER ********")
-                print ("****** ATTEMPTING TO GLITTER ********")
-
                 # Glitter has been sensed.  Action the Grab.
 
                 action = Global._grab_action
@@ -126,19 +128,10 @@ class MovePlanningAgentC(AgentA):
 
             elif (self.location == Global._start_room) and (self.has_gold == True):
 
-                # TBD:  I DON"T THINK THIS GETS CALLED ANY MORE SINCE THE CLIMB ACTION IS
-                # ONLY DONE IN THE EXIT PLAN.  THE ENVIRONMENT WILL PREVENT THE AGENT FROM
-                # CLIMING OUT IF IT"S NOT IN THE CORRECT START ROOM.
-
-                # Climb out!
-
-                print ("****** ATTEMPTING TO CLIMB ********  LOCAITON:", self.location)
-                print ("****** ATTEMPTING TO CLIMB ******** HAS GOLD: ", self.has_gold)
-                print ("****** ATTEMPTING TO CLIMB ********")
-                print ("****** ATTEMPTING TO CLIMB ********")
-                print ("****** ATTEMPTING TO CLIMB ********")
+                # The climb action is handled via the Agent's exit plan and the environment.
 
                 action = Global._climb_action
+
             else:
       
                 # Randomly select one of the possible actions from the action set (minus
@@ -162,10 +155,13 @@ class MovePlanningAgentC(AgentA):
     
     def __create_start_node_in_graph(self, start_node, direction):
 
+        # The start node is the special case - both the current and new nodes will be the
+        # same start node.
+
         self.__add_node_to_graph(start_node, start_node, direction)
 
 
-    # __add_node
+    # __add_node_to_graph
 
     def __add_node_to_graph(self, current_node, new_node, direction):
 
@@ -225,8 +221,8 @@ class MovePlanningAgentC(AgentA):
                 self.G.add_edge(node_east,  current_east,  action=Global._forward_action)
 
 
-        if Global._display: print ("\nNodes:", self.G.nodes)
-        if Global._display: print ("\nEdges:", self.G.edges)
+        if Global._debug: print ("\nNodes:", self.G.nodes)
+        if Global._debug: print ("\nEdges:", self.G.edges)
 
 
     # __create_exit_plan
@@ -238,16 +234,18 @@ class MovePlanningAgentC(AgentA):
 
         if Global._display: print ("Status:\t\t\t*** Agent is creating an exit plan from", source_node, "to", dest)
 
-        if Global._display: print ("\nShortest Dijkstra path:", nx.shortest_path(self.G, source_node, dest_node, weight=None, method='dijkstra'))
+        if Global._debug:   print ("\nShortest Dijkstra path:", nx.shortest_path(self.G, source_node, dest_node, weight=None, method='dijkstra'))
         if Global._display: print ("\nShortest A* path:", nx.astar_path(self.G, source_node, dest_node, heuristic=None, weight='manhattan_distance'))
 
         short_path = nx.astar_path(self.G, source_node, dest_node, heuristic=None, weight='manhattan_distance')
 
-        # Print out the nodes.
+        # Print out the nodes if in debug mode.
 
-        for node in short_path:
+        if Global._debug:
 
-            print (self.G.nodes[node]["node"], " ", self.G.nodes[node]["direction"])
+            for node in short_path:
+
+                print (self.G.nodes[node]["node"], " ", self.G.nodes[node]["direction"])
 
         # The Agent only has to reach (1,1) in order to climb out,  Therefore, remove all
         # other nodes past the first (1,1) in the path.
@@ -256,20 +254,26 @@ class MovePlanningAgentC(AgentA):
 
         first_home_node_idx = short_path.index(first_home_node)
 
-        print ("Index of (1,1) is: ", first_home_node, "at", first_home_node_idx)
+        if Global._display: print ("Index of (1,1) is: ", first_home_node, "at node", first_home_node_idx, "in the path.")
 
         new_short_path = short_path[:first_home_node_idx+1]
 
-        print ("new short_path =", new_short_path)
+        if Global._display: print ("New short_path =", new_short_path)
 
         # Build the edges from the path.
 
         path_edges = []
     
         for i in range(len(new_short_path) - 1):
-            u = new_short_path[i]
-            v = new_short_path[i+1]
-            path_edges.append((u, v))
+
+            # Get the current and new nodes.
+
+            node1 = new_short_path[i]
+            node2 = new_short_path[i+1]
+
+            # Add the edge.
+
+            path_edges.append((node1, node2))
 
         action_plan = []
 
@@ -282,7 +286,7 @@ class MovePlanningAgentC(AgentA):
         # from the current node to the next node in the edge pair.
 
         for edge in path_edges:
-            print (edge, " ", self.G.edges[edge]["action"])
+            if Global._debug: print (edge, " ", self.G.edges[edge]["action"])
             action_plan.append(self.G.edges[edge]["action"])
 
         # Finally, append the Climb action.

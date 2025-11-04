@@ -8,6 +8,31 @@ G = nx.DiGraph()
 
 def main():
 
+    bv_low = "BV-LOW"
+    bv_med = "BV-MED"
+    bv_hi  = "BV_HI"
+
+    tc_low = "TC-LOW"
+    tc_med = "TC-MED"
+    tc_hi  = "TC_HI"
+
+    bvl = [ "A1", "A6" ]
+    bvm = [ "A3", "A4", "A5" ]
+    bvh = [ "A2" ]
+
+    tcl = [ ""]
+
+    G.add_node(bv_low, apps=bvl)
+
+    print (G.nodes)
+
+    print ("Apps: ", G.nodes[bv_low]["apps"])
+
+    app_list = G.nodes[bv_low]["apps"]
+    app_list.append("A7")
+
+    print ("Apps: ", G.nodes[bv_low]["apps"])
+
     start_node = (1, 1)
     direction = "east"
     

@@ -3,10 +3,15 @@
 # Global variables.
 
 _display = True
+_debug   = False
 
 # Start room.
 
 _start_room = (1, 1)
+
+# Probabilities.
+
+_pit_probability = 0.2
 
 # Directions
 

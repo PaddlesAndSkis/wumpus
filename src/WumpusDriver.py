@@ -18,6 +18,9 @@ def main():
 
     # Initialize the Agent.
 
+    # For Project 1, use the Naive Agent (does not store location)
+    # For Project 2, use the Move Planning Agent (stores location)
+
     #myAgent = NaiveAgentC()
     myAgent = MovePlanningAgentC(Global._start_room)
 
@@ -25,7 +28,7 @@ def main():
 
     myEnvironment = EnvironmentC()
 
-    # Initialize the game controller and play the episode.
+    # Initialize the game controller  and play the episode.
 
     episodeController = EpisodeControllerC(myAgent, myEnvironment)
     episodeController.playEpisode()
@@ -35,11 +38,3 @@ def main():
 # Release the Wumpus!
 
 main()
-
-
-#mcp - an intermediary orchestration system to connect AI / agents to back-end databases and tools 
-#    - similar to an enterprise service bus
-#    - by Antropic - open-source 
-
-
-
