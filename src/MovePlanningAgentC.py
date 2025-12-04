@@ -30,7 +30,7 @@ class MovePlanningAgentC(AgentA):
         # Add the initial location as the root of the path tree.
 
         self.G = nx.DiGraph()
-        self.__create_start_node_in_graph(self.location, self.direction)
+        self._create_start_node_in_graph(self.location, self.direction)
         
 
     # percept
@@ -57,7 +57,7 @@ class MovePlanningAgentC(AgentA):
                     
             if Global._display: print ("Action Result:\t\tLooking to add", new_location, "facing", direction, "(and other directions) to the visited room graph.")
 
-            self.__add_node_to_graph(self.location, new_location, direction)
+            self._add_node_to_graph(self.location, new_location, direction)
             
             # Update the Agent's location and direction.
 
@@ -124,7 +124,7 @@ class MovePlanningAgentC(AgentA):
                 # Create the Exit plan that will be actioned the next time the Agent needs
                 # to action.
 
-                self.exit_plan = self.__create_exit_plan(self.location, (1, 1), self.direction)
+                self.exit_plan = self._create_exit_plan(self.location, (1, 1), self.direction)
 
             elif (self.location == Global._start_room) and (self.has_gold == True):
 
@@ -148,22 +148,22 @@ class MovePlanningAgentC(AgentA):
         return action
 
 
-    # Private methods.
+    # Protected methods.
 
 
-    # __create_start_node_in_graph
+    # _create_start_node_in_graph
     
-    def __create_start_node_in_graph(self, start_node, direction):
+    def _create_start_node_in_graph(self, start_node, direction):
 
         # The start node is the special case - both the current and new nodes will be the
         # same start node.
 
-        self.__add_node_to_graph(start_node, start_node, direction)
+        self._add_node_to_graph(start_node, start_node, direction)
 
 
-    # __add_node_to_graph
+    # _add_node_to_graph
 
-    def __add_node_to_graph(self, current_node, new_node, direction):
+    def _add_node_to_graph(self, current_node, new_node, direction):
 
         # Add four nodes to the graph, one for each direction the Agent
         # can face - north, east, south and west.
@@ -225,9 +225,9 @@ class MovePlanningAgentC(AgentA):
         if Global._debug: print ("\nEdges:", self.G.edges)
 
 
-    # __create_exit_plan
+    # _create_exit_plan
 
-    def __create_exit_plan(self, source, dest, direction):
+    def _create_exit_plan(self, source, dest, direction):
         
         source_node = str(source) + "-" + direction
         dest_node = str(dest) + "-" + Global._east
