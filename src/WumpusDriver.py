@@ -7,6 +7,7 @@ import Global
 from EnvironmentC import EnvironmentC
 from NaiveAgentC import NaiveAgentC
 from MovePlanningAgentC import MovePlanningAgentC
+from ProbAgentC import ProbAgentC
 from EpisodeControllerC import EpisodeControllerC
 
 
@@ -22,8 +23,9 @@ def main():
     # For Project 2, use the Move Planning Agent (stores location)
 
     #myAgent = NaiveAgentC()
-    myAgent = MovePlanningAgentC(Global._start_room)
-
+   # myAgent = MovePlanningAgentC(Global._start_room)
+    myAgent = ProbAgentC(Global._start_room)
+    
     # Initialize the environment.
 
     myEnvironment = EnvironmentC()

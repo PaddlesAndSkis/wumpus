@@ -56,9 +56,15 @@ class EpisodeControllerC():
 
             post_action_percepts = self.environment.take_action(action)
            
-            # Notify the Agent of the post-action percepts.
+            # Determine if this is still an active episode after the action
+            # has been taken (e.g., the Agent hasn't fallen into a pit or
+            # has been eaten by the Wumpus).
 
-            self.agent.percept(post_action_percepts)
+            if (self.environment.is_active_episode()):
+
+                # Notify the Agent of the post-action percepts.
+
+                self.agent.percept(post_action_percepts)
 
             # Display the game board after each action.
 

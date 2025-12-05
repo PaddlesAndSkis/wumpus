@@ -4,6 +4,7 @@
 
 import random
 import networkx as nx
+from networkx.algorithms.bridges import local_bridges
 
 
 # Import Project classes.
@@ -33,17 +34,14 @@ class ProbAgentC(MovePlanningAgentC):
 
         super().__init__(location)
         
-        print ("hello there Cam")
+
+        # Build the model.
 
         self.build_model()
 
-        current_room =  "1-1" #"2-2" #"1-2"  # "1-1"
+      #  current_room =  "1-1" #"2-2" #"1-2"  # "1-1"
 
-        self.get_move_options(current_room)
-
-      #  exit(0)
-
-
+       # self.get_move_options(current_room)
 
 
 
@@ -71,14 +69,36 @@ class ProbAgentC(MovePlanningAgentC):
                     
             if Global._display: print ("Action Result:\t\tLooking to add", new_location, "facing", direction, "(and other directions) to the visited room graph.")
 
-            # CHANGED TO SUPER
-            #self.__add_node_to_graph(self.location, new_location, direction)
             self._add_node_to_graph(self.location, new_location, direction)
             
             # Update the Agent's location and direction.
 
             self.location  = new_location
             self.direction = direction
+
+            x = self.location[0]
+            y = self.location[1]
+            location_conversion = str(x) + "-" + str(y)
+
+            print ("+++++++ Agent is in: ", self.location, "facing", self.direction)
+            print ("+++++++ Converted Location: ", location_conversion)
+
+            # I Don't think we need to test for a breeze at this point as I believe it is the
+            # post-move percepts.  It doesn't trigger...
+
+            if (self.percepts.get_breeze()):
+            
+                print ("+++++++ BREEZE DETECTED!!")
+
+            # If we got to this point, the Agent is still alive so this room is not a pit!
+
+            print ("!!!!!!!NOT A PIT !!!!  Setting this room to be not a pit!!!")
+            self.pit_list[location_conversion] = 0
+
+            # Finally, add this room to the path taken.
+
+            self.path_taken.append(location_conversion)
+
 
         # Print the percepts.
 
@@ -163,9 +183,27 @@ class ProbAgentC(MovePlanningAgentC):
 
                 print ("******* Agent is in: ", self.location, "facing", self.direction)
                 print ("******* Converted Location: ", location_conversion)
-                move_options = self.get_move_options(location_conversion)
 
+                if (self.percepts.get_breeze()):
+            
+                    print ("**** BEFORE GETTING THE NEXT MOVE, BREEZE DETECTED!!")
+
+                    # Breeze is detected in this room.  Therefore, update the breeze list.
+
+                    self.breeze_list[location_conversion] = 1
+                else:
+
+                    # No breeze detected so set this room on the breeze list to be 0.
+                    
+                    self.breeze_list[location_conversion] = 0
+
+                # Get the possible move options.
+
+                move_options = self.get_move_options(location_conversion)
+                best_room_option = self.choose_best_move_option(move_options)
              
+                print ("The best room option is", best_room_option)
+
                 # Call the model to determine which neighbour we should move to.
 
                 # If north and facing south, create a "turn plan" and add this to the action
@@ -197,6 +235,11 @@ class ProbAgentC(MovePlanningAgentC):
 
 
     def build_model(self):
+
+        # Initialize the path taken through the cave.  As a room is visited, the node is added to the
+        # list.
+
+        self.path_taken = []
 
         # Dictionary of rooms as each room is unique (e.g., "1-1").
 
@@ -275,18 +318,56 @@ class ProbAgentC(MovePlanningAgentC):
 
         self.pit_list["1-1"] = 0
 
-        self.pit_list["1-2"] = 1   # Exxample for testing
-
         # Print out the pit predicate list and the pit list.
 
         print ("pit_predicate_list", self.pit_predicate_list)
         print ("pit_list", self.pit_list)
         print ("breeze_list", self.breeze_list)
 
+        # Finally, add the starting room to the path taken.
 
-        # Start of code that gets run every time an Agent wants to move forward.
-        #
-        #
+        self.path_taken.append("1-1")
+
+
+    def choose_best_move_option(self, neighbour_prob_dict):
+
+        print ("Choosing the best room to move to")
+        print ("Here is the path so far", self.path_taken)
+
+        best_false_value = 0
+        best_room_option = ""
+
+        for best_room in neighbour_prob_dict.keys():
+
+            true_false_dict = neighbour_prob_dict[best_room]
+            false_value = true_false_dict["False"]
+
+            print ("Evaluating room:", best_room, ": the % that it is NOT a pit is", false_value)
+
+            if (false_value > best_false_value):
+
+                # Get the last room visited in the path.
+
+                if (len(self.path_taken) > 1):
+
+                    last_room_visited = self.path_taken[-2]
+                else:
+                    last_room_visited = self.path_taken[-1]
+
+                print ("Comparing the best room", best_room, "to the last_room visited", last_room_visited)
+
+                # Ensure that the best room is not the last room visited.  The last room visited
+                # will have a False value of 100% and the Agent would just go back and forth.
+
+                if (best_room != last_room_visited):
+
+                    best_false_value = false_value
+                    best_room_option = best_room 
+
+        return best_room_option
+
+
+    # get_move_options
 
     def get_move_options(self, current_room):
 
@@ -335,8 +416,8 @@ class ProbAgentC(MovePlanningAgentC):
         breeze_condition_categorical = ConditionalCategorical([current_room_cases])
         breeze_condition_predicate   = self.pit_predicate_list[current_room]     # !!! Remove -This isn't used - breeze useses the categorical value that contains the cases not the predicate value
 
-        print ("Breeze11 condition categorical:", breeze_condition_categorical)
-        print ("Breeze11 condition predicate:  ", breeze_condition_predicate)
+      #  print ("Breeze11 condition categorical:", breeze_condition_categorical)
+      #  print ("Breeze11 condition predicate:  ", breeze_condition_predicate)
 
         # Create the variables (breeze room and its adjacent rooms) and the
         # edges (an edge is from an adjacent room to the breeze room).
@@ -370,14 +451,17 @@ class ProbAgentC(MovePlanningAgentC):
         variable_list.append(breeze_condition_categorical)
         room_and_breeze_list.append(breeze_condition_knowledge)
 
-        print ("variable_list:", variable_list)
-        print ("edge list:    ", edge_list)
+     #   print ("variable_list:", variable_list)
+     #   print ("edge list:    ", edge_list)
         print ("room_and_breeze_list:  ", room_and_breeze_list)
 
         # Run the model.
         neighbour_prob_dict = self.run_model_single(current_room_neighbours, variable_list, edge_list, room_and_breeze_list)
 
         print ("neighbour_prob_dict:", neighbour_prob_dict)
+
+        return neighbour_prob_dict
+
        # self.run_model(variable_list, edge_list)
        # self.run_model(variable_list[0], edge_list[0])
 
