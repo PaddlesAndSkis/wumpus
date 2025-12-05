@@ -39,6 +39,8 @@ class ProbAgentC(MovePlanningAgentC):
 
         self.build_model()
 
+        self.move_plan = []
+
       #  current_room =  "1-1" #"2-2" #"1-2"  # "1-1"
 
        # self.get_move_options(current_room)
@@ -141,6 +143,29 @@ class ProbAgentC(MovePlanningAgentC):
 
             if Global._display: print ("Exit plan after action:\t\t", self.exit_plan)
 
+
+        elif (len(self.move_plan) > 0):
+
+            # The Agent is executing its move plan.  Therefore, get the next
+            # action in the plan.
+
+            if Global._display: print ("Status:\t\t\t*** Agent is currently in a movement plan...")
+
+            if Global._display: print ("Move plan:\t\t\t", self.move_plan)
+
+            # Get the next action to take.
+
+            action = self.move_plan[0]
+
+            if Global._display: print ("Action from Move plan:\t\t", action)
+
+            # Remove the action from the exit plan.
+
+            self.move_plan.pop(0)
+
+            if Global._display: print ("Move plan after action:\t\t", self.move_plan)
+
+        
         
         else:
 
@@ -204,6 +229,14 @@ class ProbAgentC(MovePlanningAgentC):
              
                 print ("The best room option is", best_room_option)
 
+                self.move_plan = self.get_move_plan(location_conversion, best_room_option, self.direction)
+
+                print ("&&&&&&&&&&&&&&& MOVE_PLAN:", self.move_plan)
+
+                action = self.move_plan.pop(0)
+
+                print ("&&&&&&&&&&&&&&& POPPED the MOVE_PLAN and action is:", action)
+
                 # Call the model to determine which neighbour we should move to.
 
                 # If north and facing south, create a "turn plan" and add this to the action
@@ -214,6 +247,10 @@ class ProbAgentC(MovePlanningAgentC):
                     #_turnRight_action = "TurnRight"
                     #_shoot_action     = "Shoot"
 
+                
+                # Also, an alternative is to have a separate graph of nodes visited - no need to keep
+                # the  directions.
+
                 # Do we randomly shoot the arrow or shoot the arrow when we smell the wumpus?
 
 
@@ -221,11 +258,15 @@ class ProbAgentC(MovePlanningAgentC):
                 # Randomly select one of the possible actions from the action set (minus
                 # Grab and Climb).
 
-                agent_action = random.randint(0, 3)
+                #  UNCOMMENT THIS TO GET THE SHOOT - CHANGE RANDOM
+                #  UNCOMMENT THIS TO GET THE SHOOT
+                #  UNCOMMENT THIS TO GET THE SHOOT
 
-                if Global._display: print ("Action:\t\t\t", Global._action_array[agent_action])
+            #    agent_action = random.randint(0, 3)
+
+            #    if Global._display: print ("Action:\t\t\t", Global._action_array[agent_action])
         
-                action = Global._action_array[agent_action]
+            #    action = Global._action_array[agent_action]
 
         # Return the selected action.
 
@@ -327,6 +368,55 @@ class ProbAgentC(MovePlanningAgentC):
         # Finally, add the starting room to the path taken.
 
         self.path_taken.append("1-1")
+
+
+    def get_move_plan(self, src_room, dest_room, direction):
+
+        move_plan = []
+
+        # Get the x, y coordinates of the source and destination rooms.
+
+        src_x = src_room[0]
+        src_y = src_room[2]
+
+        dest_x = dest_room[0]
+        dest_y = dest_room[2]
+
+        if (dest_x < src_x):
+            destination = Global._west
+
+        elif (dest_x > src_x):
+            destination = Global._east
+
+        elif (dest_y < src_y):
+            destination = Global._south
+
+        elif (dest_y > src_y):
+            destination = Global._north
+
+        # Now figure out how to turn to get there.
+
+        while (direction != destination):
+            direction = self.turn_right(direction)
+            move_plan.append(Global._turnRight_action)
+
+        # Add the forward action to the plan.
+
+        move_plan.append(Global._forward_action)
+
+        return move_plan 
+
+
+    def turn_right(self, direction):
+
+        if (direction == Global._north):
+            return Global._east
+        elif (direction == Global._east):
+            return Global._south
+        elif (direction == Global._south):
+            return Global._west
+        elif (direction == Global._west):
+            return Global._north
 
 
     def choose_best_move_option(self, neighbour_prob_dict):
