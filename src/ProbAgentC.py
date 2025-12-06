@@ -5,6 +5,7 @@
 import random
 import networkx as nx
 from networkx.algorithms.bridges import local_bridges
+from numpy._typing import _256Bit
 
 
 # Import Project classes.
@@ -114,6 +115,9 @@ class ProbAgentC(MovePlanningAgentC):
     def action(self) -> str:
  
         print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! CURRENT ROOM:", self.location)
+        print ("CURRENT PIT LIST", self.pit_list)
+        print ("CURRENT BREEZE LIST", self.breeze_list)
+        print ("CURRENT PATH", self.path_taken)
 
         action = None
 
@@ -225,7 +229,7 @@ class ProbAgentC(MovePlanningAgentC):
                 # Get the possible move options.
 
                 move_options = self.get_move_options(location_conversion)
-                best_room_option = self.choose_best_move_option(move_options)
+                best_room_option = self.choose_best_move_option(location_conversion, move_options, self.direction)
              
                 print ("The best room option is", best_room_option)
 
@@ -396,9 +400,19 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Now figure out how to turn to get there.
 
-        while (direction != destination):
-            direction = self.turn_right(direction)
-            move_plan.append(Global._turnRight_action)
+        if ((direction == Global._east) and (destination == Global._north)):
+
+            # This is the only direction and destination where turning left
+            # is better.
+
+            move_plan.append(Global._turnLeft_action)
+        else:
+
+            # Might as well turn right.
+
+            while (direction != destination):
+                direction = self.turn_right(direction)
+                move_plan.append(Global._turnRight_action)
 
         # Add the forward action to the plan.
 
@@ -408,6 +422,8 @@ class ProbAgentC(MovePlanningAgentC):
 
 
     def turn_right(self, direction):
+
+
 
         if (direction == Global._north):
             return Global._east
@@ -419,13 +435,14 @@ class ProbAgentC(MovePlanningAgentC):
             return Global._north
 
 
-    def choose_best_move_option(self, neighbour_prob_dict):
+    def choose_best_move_option(self, current_location, neighbour_prob_dict, direction):
 
         print ("Choosing the best room to move to")
         print ("Here is the path so far", self.path_taken)
 
         best_false_value = 0
         best_room_option = ""
+        best_room_options = []
 
         for best_room in neighbour_prob_dict.keys():
 
@@ -434,7 +451,7 @@ class ProbAgentC(MovePlanningAgentC):
 
             print ("Evaluating room:", best_room, ": the % that it is NOT a pit is", false_value)
 
-            if (false_value > best_false_value):
+            if (false_value >= best_false_value):
 
                 # Get the last room visited in the path.
 
@@ -449,12 +466,50 @@ class ProbAgentC(MovePlanningAgentC):
                 # Ensure that the best room is not the last room visited.  The last room visited
                 # will have a False value of 100% and the Agent would just go back and forth.
 
-                if (best_room != last_room_visited):
+            #    if (best_room != last_room_visited):
+                if (best_room not in (self.path_taken)):
+
+                   # best_room_option = best_room 
+                    if (false_value > best_false_value):
+                        best_room_options = [best_room] 
+                    else:
+                        # Equal,
+                        best_room_options.append(best_room) 
 
                     best_false_value = false_value
-                    best_room_option = best_room 
 
+        if (len(best_room_options) > 1):
+
+            shortest_path = 100    # Make it large to start!
+
+            for candidate_option in best_room_options:
+
+                path_len = self.calculate_shortest_path(current_location, candidate_option, direction)
+
+                print ("Path Len from ", current_location, "to", candidate_option, "while facing", direction, "is", path_len)
+                if (path_len < shortest_path):
+                    shortest_path = path_len
+                    best_room_option = candidate_option
+
+        else:
+            best_room_option = best_room_options[0]
+
+        #best_room_option = random.choice(best_room_options)
+
+        print ("Choosing", best_room_option, "from shortest path out of possible equal options:", best_room_options)
         return best_room_option
+
+    
+    # calculate_shortest_path
+
+    def calculate_shortest_path(self, source, dest, direction):
+
+        return len(self.get_move_plan(source, dest, direction))
+
+    #    candidate_move_plan = self.get_move_plan(source, dest, direction)
+
+    #    return len(candidate_move_plan)
+  
 
 
     # get_move_options
