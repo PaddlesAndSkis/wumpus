@@ -6,6 +6,7 @@ import random
 import networkx as nx
 from networkx.algorithms.bridges import local_bridges
 from numpy._typing import _256Bit
+import math
 
 
 # Import Project classes.
@@ -74,7 +75,7 @@ class ProbAgentC(MovePlanningAgentC):
                 print ("new probability for each remaining room:", new_prob)
                 wumpus_categorical = PredicateC(new_prob).toCategorical()
                 self.wumpus_predicate_list[room_key] = wumpus_categorical
-
+                self.wumpus_list[room_key] = 0
 
         # Determine if a move has been made.
 
@@ -550,6 +551,12 @@ class ProbAgentC(MovePlanningAgentC):
             not_a_pit_or_wumpus = false_value * wumpus_false_value
 
             print ("Evaluating room:", best_room, ": the % that it is NOT both is (1-p)(1-w)", not_a_pit_or_wumpus)
+
+            is_nan = isinstance(not_a_pit_or_wumpus, float) and math.isnan(not_a_pit_or_wumpus)
+
+            if (is_nan):
+                not_a_pit_or_wumpus = 1
+                print ("Converting room:", best_room, ": the % that it is NOT both is (1-p)(1-w)", not_a_pit_or_wumpus)
 
          #   if (false_value >= best_false_value):
             if (not_a_pit_or_wumpus >= best_false_value):
