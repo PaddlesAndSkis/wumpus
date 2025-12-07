@@ -35,16 +35,14 @@ class ProbAgentC(MovePlanningAgentC):
 
         super().__init__(location)
         
+        # Initialize the variables.
+
+        self.has_arrow = True
+        self.move_plan = []
 
         # Build the model.
 
         self.build_model()
-
-        self.move_plan = []
-
-      #  current_room =  "1-1" #"2-2" #"1-2"  # "1-1"
-
-       # self.get_move_options(current_room)
 
 
 
@@ -64,6 +62,20 @@ class ProbAgentC(MovePlanningAgentC):
         new_location = self.percepts.get_move()
         direction    = self.percepts.get_direction()
 
+        # Determine if a scream has been heard from the wumpus.
+
+        if (self.percepts.get_scream()):
+
+            print ("*********SCREAM DETECTED")
+
+            for room_key in self.rooms_dict.keys():
+
+                new_prob = 0
+                print ("new probability for each remaining room:", new_prob)
+                wumpus_categorical = PredicateC(new_prob).toCategorical()
+                self.wumpus_predicate_list[room_key] = wumpus_categorical
+
+
         # Determine if a move has been made.
 
         if (len(new_location) != 0):
@@ -79,12 +91,12 @@ class ProbAgentC(MovePlanningAgentC):
             self.location  = new_location
             self.direction = direction
 
-            x = self.location[0]
-            y = self.location[1]
-            location_conversion = str(x) + "-" + str(y)
+          #  x = self.location[0]
+          #  y = self.location[1]
+            current_room = str(self.location[0]) + "-" + str(self.location[1])
 
             print ("+++++++ Agent is in: ", self.location, "facing", self.direction)
-            print ("+++++++ Converted Location: ", location_conversion)
+            print ("+++++++ Converted Location: ", current_room)
 
             # I Don't think we need to test for a breeze at this point as I believe it is the
             # post-move percepts.  It doesn't trigger...
@@ -93,14 +105,39 @@ class ProbAgentC(MovePlanningAgentC):
             
                 print ("+++++++ BREEZE DETECTED!!")
 
+            if (self.percepts.get_stench()):
+            
+                print ("+++++++ STENCH DETECTED!!")
+
             # If we got to this point, the Agent is still alive so this room is not a pit!
 
             print ("!!!!!!!NOT A PIT !!!!  Setting this room to be not a pit!!!")
-            self.pit_list[location_conversion] = 0
+            self.pit_list[current_room] = 0
+
+            print ("!!!!!!!NOT A WUMPUS !!!!  Setting this room to be not a pit!!!")
+            self.wumpus_list[current_room] = 0
+
+            wumpus_free_room_count = 0
+
+            for wumpus_room in self.wumpus_list.keys():
+
+                if (self.wumpus_list[wumpus_room] == 0):
+
+                    wumpus_free_room_count = wumpus_free_room_count + 1
+
+            for room_key in self.rooms_dict.keys():
+
+                if (self.wumpus_list[room_key] == -1):
+
+                    new_prob = 1/(15 - wumpus_free_room_count) if wumpus_free_room_count < 15 else 0
+                    print ("new probability for each remaining room:", new_prob)
+                    wumpus_categorical = PredicateC(new_prob).toCategorical()
+                    self.wumpus_predicate_list[room_key] = wumpus_categorical
+
 
             # Finally, add this room to the path taken.
 
-            self.path_taken.append(location_conversion)
+            self.path_taken.append(current_room)
 
 
         # Print the percepts.
@@ -201,6 +238,13 @@ class ProbAgentC(MovePlanningAgentC):
 
                 action = Global._climb_action
 
+            elif ((self.percepts.get_stench()) and (self.has_arrow == True)):
+
+                # Stench has been detected and we have the arrow.  May as well give it a shot.
+
+                action = Global._shoot_action
+                self.has_arrow = False
+
             else:
       
                 # Know location and direction
@@ -255,28 +299,28 @@ class ProbAgentC(MovePlanningAgentC):
              
                 print ("The best room option is", best_room_option)
 
-                self.move_plan = self.get_move_plan(location_conversion, best_room_option, self.direction)
+                # if (have arrow and stench is true; turn in direction and shoot arrow in direction of )
 
-                print ("&&&&&&&&&&&&&&& MOVE_PLAN:", self.move_plan)
+                if (best_room_option == 'Exit'):
 
-                action = self.move_plan.pop(0)
+                    action = Global._grab_action
 
-                print ("&&&&&&&&&&&&&&& POPPED the MOVE_PLAN and action is:", action)
+                    # Create the Exit plan that will be actioned the next time the Agent needs
+                    # to action.
 
-                # Call the model to determine which neighbour we should move to.
-
-                # If north and facing south, create a "turn plan" and add this to the action
-                # similar to the exit plan "turn left; turn left"  ("Turning...")
-
-                # _forward_action   = "Forward"
-                    #_turnLeft_action  = "TurnLeft"
-                    #_turnRight_action = "TurnRight"
-                    #_shoot_action     = "Shoot"
-
+                    self.exit_plan = self._create_exit_plan(self.location, (1, 1), self.direction)
                 
-                # Also, an alternative is to have a separate graph of nodes visited - no need to keep
-                # the  directions.
+                else:
 
+                    self.move_plan = self.get_move_plan(location_conversion, best_room_option, self.direction)
+
+                    print ("&&&&&&&&&&&&&&& MOVE_PLAN:", self.move_plan)
+
+                    action = self.move_plan.pop(0)
+
+                    print ("&&&&&&&&&&&&&&& POPPED the MOVE_PLAN and action is:", action)
+
+ 
                 # Do we randomly shoot the arrow or shoot the arrow when we smell the wumpus?
 
 
@@ -510,20 +554,9 @@ class ProbAgentC(MovePlanningAgentC):
          #   if (false_value >= best_false_value):
             if (not_a_pit_or_wumpus >= best_false_value):
 
-                # Get the last room visited in the path.
-
-                if (len(self.path_taken) > 1):
-
-                    last_room_visited = self.path_taken[-2]
-                else:
-                    last_room_visited = self.path_taken[-1]
-
-                print ("Comparing the best room", best_room, "to the last_room visited", last_room_visited)
-
                 # Ensure that the best room is not the last room visited.  The last room visited
                 # will have a False value of 100% and the Agent would just go back and forth.
 
-            #    if (best_room != last_room_visited):
                 if (best_room not in (self.path_taken)):
 
                    # best_room_option = best_room 
@@ -553,6 +586,14 @@ class ProbAgentC(MovePlanningAgentC):
             best_room_option = best_room_options[0]
 
         #best_room_option = random.choice(best_room_options)
+        
+        # Determine if it is best if the Agent just leaves.
+
+        if (best_false_value < .5):
+
+            # Best for the Agent to leave.
+
+            best_room_option = 'Exit'
 
         print ("Choosing", best_room_option, "from shortest path out of possible equal options:", best_room_options)
         return best_room_option
@@ -637,6 +678,15 @@ class ProbAgentC(MovePlanningAgentC):
 
             # Create the room predicate.
 
+            if (self.percepts.get_stench()):
+
+                if (self.wumpus_list[current_room_neighbour] != 0):
+                    new_prob = 1/len(current_room_neighbours)
+                    print ("STEnCh DETECTed: THEREFORE UPDATING NEIGHTBOURS PROBS TO", new_prob)
+                    wumpus_categorical = PredicateC(new_prob).toCategorical()
+                    self.wumpus_predicate_list[current_room_neighbour] = wumpus_categorical
+                  #  self.wumpus_list[current_room_neighbour] = 1  # do this if the agent survives
+
             current_room_neighbour_predicate = self.wumpus_predicate_list[current_room_neighbour]
             variable_list.append(current_room_neighbour_predicate)
 
@@ -649,6 +699,25 @@ class ProbAgentC(MovePlanningAgentC):
 
             current_room_neighbour_wumpus_knowledge = self.wumpus_list[current_room_neighbour]
             room_and_stench_list.append(current_room_neighbour_wumpus_knowledge)
+
+                
+        # If there is a stench, then the Wumpus is in one of the neighbours.
+        # Therefore, set the rest of the locations to 0 (no Wumpus) and the
+        # predicates to 0 (no chance of a Wumpus).
+        
+        if (self.percepts.get_stench()):
+
+            for room in self.wumpus_list.keys():
+
+                if ((self.wumpus_list[room] == -1) and (room not in current_room_neighbours)):
+
+                    no_wumpus_categorical = PredicateC(0).toCategorical()
+                    self.wumpus_predicate_list[room] = no_wumpus_categorical
+                    self.wumpus_list[room] = 0
+
+            print ("wumpus_list is now", self.wumpus_list)
+
+
 
         # Now add the predicate for the stench room at the end of the list.
         # Add the stench knowledge - 0 if no stench is detected, 1 if a stench is detected.
@@ -733,6 +802,12 @@ class ProbAgentC(MovePlanningAgentC):
         for current_room_neighbour in current_room_neighbours:
 
             # Create the room predicate.
+
+            if (self.percepts.get_breeze()):
+                new_prob = 1/len(current_room_neighbours)
+                print ("BREEzE DETECTed: THEREFORE UPDATING NEIGHTBOURS PROBS TO", new_prob)
+                pit_categorical = PredicateC(new_prob).toCategorical()
+                self.pit_predicate_list[current_room_neighbour] = pit_categorical
 
             current_room_neighbour_predicate = self.pit_predicate_list[current_room_neighbour]
             variable_list.append(current_room_neighbour_predicate)
