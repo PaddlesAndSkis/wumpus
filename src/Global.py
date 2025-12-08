@@ -39,3 +39,6 @@ _climb_action     = "Climb"
 
 _action_array = [ _forward_action, _turnLeft_action, _turnRight_action, _shoot_action, _grab_action, _climb_action ]
 
+# Agent Fear Index
+
+_agent_fear_index = .35

@@ -22,7 +22,7 @@ class EpisodeControllerC():
 
     # playEpisode
 
-    def playEpisode(self):
+    def playEpisode(self) -> int:
 
         # Display the initial board.
 
@@ -71,6 +71,6 @@ class EpisodeControllerC():
             if Global._display: self.environment.display_board()
 
 
-        # Print the final score for the Agent.
+        # Return the final score for the Agent.
 
-        print ("Episode Complete: the Agent's final score is:", self.environment.get_Agent_Score(), "in", agent_move, "moves.")
+        return self.environment.get_Agent_Score(), agent_move

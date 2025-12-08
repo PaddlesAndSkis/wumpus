@@ -232,10 +232,11 @@ class MovePlanningAgentC(AgentA):
         source_node = str(source) + "-" + direction
         dest_node = str(dest) + "-" + Global._east
 
-        if Global._display: print ("Status:\t\t\t*** Agent is creating an exit plan from", source_node, "to", dest)
+        if Global._display: print ("Status:\t\t\tAgent is creating an exit plan from", source_node, "to", dest)
+      #  if Global._display: print ("*** Status:\t\t\tAgent is creating an exit plan from", source_node, "to", dest)                if Global._display: print ("Status:\t\t\t*** Path Len from ", current_location, "to", candidate_option, "while facing", direction, "is", path_len)
 
-        if Global._debug:   print ("\nShortest Dijkstra path:", nx.shortest_path(self.G, source_node, dest_node, weight=None, method='dijkstra'))
-        if Global._display: print ("\nShortest A* path:", nx.astar_path(self.G, source_node, dest_node, heuristic=None, weight='manhattan_distance'))
+        if Global._debug:   print ("Status:\t\t\tAgent shortest Dijkstra path:", nx.shortest_path(self.G, source_node, dest_node, weight=None, method='dijkstra'))
+        if Global._display: print ("Status:\t\t\tAgent Shortest A* path:", nx.astar_path(self.G, source_node, dest_node, heuristic=None, weight='manhattan_distance'))
 
         short_path = nx.astar_path(self.G, source_node, dest_node, heuristic=None, weight='manhattan_distance')
 
@@ -258,7 +259,7 @@ class MovePlanningAgentC(AgentA):
 
         new_short_path = short_path[:first_home_node_idx+1]
 
-        if Global._display: print ("New short_path =", new_short_path)
+        if Global._display: print ("Status:\t\t\tAgent new short path =", new_short_path)
 
         # Build the edges from the path.
 
