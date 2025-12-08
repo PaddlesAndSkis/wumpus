@@ -22,7 +22,7 @@ def main():
 
     # Set local variables.
 
-    number_of_episodes = 1 #1000
+    number_of_episodes = 1000 #1000
     episode_wins = 0
     episode_scares = 0
     episode_total_score = 0
@@ -73,17 +73,21 @@ def main():
         if ((i != 0) and ((i % 100) == 0)):
             print ("Completed", i, "episodes...")
 
+
     print ("\nStats:")
     print ("------")
     print ("Number of episodes:", number_of_episodes)
     print ("Number of episode wins:", episode_wins)
-    print ("% of wins:", (episode_wins / number_of_episodes) * 100)
+    win_format = f"% of wins: {(episode_wins / number_of_episodes) * 100:.2f}"
+    print (win_format)
     print ("Number of times Agent was too scared or climbed out quickly:", episode_scares)
-    print ("% times Agent was too scared or climbed out quickly:", (episode_scares / number_of_episodes) * 100)
+    scare_format = f"% times Agent was too scared or climbed out quickly: {(episode_scares / number_of_episodes) * 100:.2f}"
+    print (scare_format)
     print ("Average score:", (episode_total_score / number_of_episodes))
     print ("\nNote: for the Naive Agent, instead of being scared with reason, it is just simply climbing out")
     print ("        for the Move Planning Agent, it cannot climb out without having the gold")
-    print ("        for the Probability Agent, it can climb out without having the gold if it is too scared")
+    print ("        for the Probability Agent, it can climb out without having the gold if the next move is too dangerous for it")
+
 
 # Release the Wumpus!
 

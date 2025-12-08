@@ -180,7 +180,7 @@ class ProbAgentC(MovePlanningAgentC):
 
         elif (len(self.move_plan) > 0):
 
-            # The Agent is executing its move plan.  Therefore, get the next
+            # The Agent is executing its move plan to get to the next best node.  Therefore, get the next
             # action in the plan.
 
             if Global._display: print ("Status:\t\t\t*** Agent is currently in a movement plan...")
@@ -240,17 +240,18 @@ class ProbAgentC(MovePlanningAgentC):
             else:
       
                 # Move Action.  First, identify the Agent location and direction.
+
                 if Global._display: print ("Status:\t\t\t*** Agent is looking to move...")
 
                 # The graph node is in the form (1, 1).  Convert it into a dictionary lookup value "1-1".
 
                 current_room = str(self.location[0]) + "-" + str(self.location[1])
 
-                # Breeze
+                # See if this is a Breeze room based on the Percepts.
 
                 self.breeze_list[current_room] = 1 if (self.percepts.get_breeze()) else 0
 
-                # Stench
+                # See if this is a Stench room based on the Percepts.
 
                 self.stench_list[current_room] = 1 if (self.percepts.get_stench()) else 0
 
@@ -261,6 +262,9 @@ class ProbAgentC(MovePlanningAgentC):
 
                 if Global._display: print ("Status:\t\t\t*** Agent is looking to see which move can avoid the Wumpus...")
                 wumpus_move_options = self._get_move_options_to_avoid_wumpus(current_room)
+
+                # Now get the best room option based on the probabilities calculated above that the neighbour rooms
+                # to which the Agent can move contains a pit or the Wumpus.
 
                 best_room_option = self._choose_best_move_option(current_room, pit_move_options, wumpus_move_options, self.direction)
              
@@ -369,7 +373,7 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Add the Wumpus model. To start, the probability of the Wumpus being in a room is 1/15 (the Wumpus
         # can't be in the start room).  However, as the cave is explored, the probability of the Wumpus being
-        # there increases.
+        # in each future room increases.
 
         self.wumpus_predicate_list = {}
         wumpus_categorical = PredicateC(1/15).toCategorical() 
@@ -532,8 +536,10 @@ class ProbAgentC(MovePlanningAgentC):
 
                 # Ensure that the best room is not in the path of rooms visited so that it doesn't go into
                 # an endless loop.  Always explore further!
+                #last_node = self.path_taken[-2] if (len(self.path_taken) > 1) else self.path_taken[-1]
+                #if ((best_room != last_node) and (len(self.path_taken) == 1)):
 
-                if (best_room not in (self.path_taken)):
+               if (best_room not in (self.path_taken)):
 
                     # If the combined % > Best False value.
                     # Set the best room options to be just this room.

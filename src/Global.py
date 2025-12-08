@@ -2,7 +2,7 @@
 
 # Global variables.
 
-_display = True
+_display = False
 _debug   = False
 
 # Start room.
@@ -41,4 +41,4 @@ _action_array = [ _forward_action, _turnLeft_action, _turnRight_action, _shoot_a
 
 # Agent Fear Index
 
-_agent_fear_index = .35
+_agent_fear_index = .5
