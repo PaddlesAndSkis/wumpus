@@ -38,7 +38,7 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Build the model.
 
-        self.build_model()
+        self._build_model()
 
 
 
@@ -240,6 +240,7 @@ class ProbAgentC(MovePlanningAgentC):
             else:
       
                 # Move Action.  First, identify the Agent location and direction.
+                if Global._display: print ("Status:\t\t\t*** Agent is looking to move...")
 
                 # The graph node is in the form (1, 1).  Convert it into a dictionary lookup value "1-1".
 
@@ -255,10 +256,13 @@ class ProbAgentC(MovePlanningAgentC):
 
                 # Get the possible move options based on the possibility that the next room is a pit or the Wumpus.
 
+                if Global._display: print ("Status:\t\t\t*** Agent is looking to see which move can avoid a pit...")
                 pit_move_options = self._get_move_options_to_avoid_pit(current_room)
+
+                if Global._display: print ("Status:\t\t\t*** Agent is looking to see which move can avoid the Wumpus...")
                 wumpus_move_options = self._get_move_options_to_avoid_wumpus(current_room)
 
-                best_room_option = self.choose_best_move_option(current_room, pit_move_options, wumpus_move_options, self.direction)
+                best_room_option = self._choose_best_move_option(current_room, pit_move_options, wumpus_move_options, self.direction)
              
                 if Global._display: print ("Status:\t\t\t*** The best room for the Agent to move to is", best_room_option)
 
@@ -267,7 +271,7 @@ class ProbAgentC(MovePlanningAgentC):
 
                 if (best_room_option == 'Exit'):
 
-                    if Global._display: print ("Status:\t\t\t*** Next moves are too dangerous.  Agent is bailing.", self.move_plan)
+                    if Global._display: print ("Status:\t\t\t*** Next moves have been deemed too dangerous.  Agent is bailing.")
 
                     # Do one final grab just in case!
 
@@ -282,7 +286,7 @@ class ProbAgentC(MovePlanningAgentC):
 
                     # Get the move plan and execute it.  The move plan will be something like ["TurnLeft", "Forward"].
 
-                    self.move_plan = self.get_move_plan(current_room, best_room_option, self.direction)
+                    self.move_plan = self._get_move_plan(current_room, best_room_option, self.direction)
 
                     if Global._display: print ("Status:\t\t\t*** The Agent's move plan is", self.move_plan)
 
@@ -296,9 +300,11 @@ class ProbAgentC(MovePlanningAgentC):
         return action
 
 
-    # build_model
+    # Private Methods
 
-    def build_model(self):
+    # _build_model
+
+    def _build_model(self):
 
         # Build the neighbours model.
 
@@ -340,7 +346,7 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Print the rooms dictionary.
 
-        if Global._display: print ("Status:\t\t\t*** The Agent's room dictionary is:", self.rooms_dict)
+        if Global._debug: print ("Status:\t\t\t*** The Agent's room dictionary is:", self.rooms_dict)
 
         # Now that the set of rooms and each room's neighbours has been constructed, set all
         # rooms to be the standard 20% probability that the room could be a pit (before any
@@ -405,9 +411,9 @@ class ProbAgentC(MovePlanningAgentC):
         self.path_taken.append("1-1")
 
 
-    # get_move_plan
+    # _get_move_plan
 
-    def get_move_plan(self, src_room, dest_room, direction):
+    def _get_move_plan(self, src_room, dest_room, direction):
 
         move_plan = []
 
@@ -451,7 +457,7 @@ class ProbAgentC(MovePlanningAgentC):
                 # Continue turning right and updating the direction until it matches the
                 # destination.
 
-                direction = self.turn_right(direction)
+                direction = self._turn_right(direction)
                 move_plan.append(Global._turnRight_action)
 
         # Add the forward action to the plan.
@@ -461,9 +467,9 @@ class ProbAgentC(MovePlanningAgentC):
         return move_plan 
 
 
-    # turn_right
+    # _turn_right
     
-    def turn_right(self, direction):
+    def _turn_right(self, direction):
 
         # By turning right, return the new direction.
 
@@ -477,9 +483,9 @@ class ProbAgentC(MovePlanningAgentC):
             return Global._north
 
 
-    # choose_best_move_option
+    # _choose_best_move_option
             
-    def choose_best_move_option(self, current_location, neighbour_prob_dict, wumpus_neighbour_prob_dict, direction):
+    def _choose_best_move_option(self, current_location, neighbour_prob_dict, wumpus_neighbour_prob_dict, direction):
 
         # Set the best room variables.
 
@@ -556,7 +562,7 @@ class ProbAgentC(MovePlanningAgentC):
 
                 # Calculate the shortest path to get to that room.
 
-                path_len = self.calculate_shortest_path(current_location, candidate_option, direction)
+                path_len = self._calculate_shortest_path(current_location, candidate_option, direction)
 
                 if Global._display: print ("Status:\t\t\t*** Path Len from ", current_location, "to", candidate_option, "while facing", direction, "is", path_len)
 
@@ -593,16 +599,16 @@ class ProbAgentC(MovePlanningAgentC):
         return best_room_option
 
     
-    # calculate_shortest_path
+    # _calculate_shortest_path
 
-    def calculate_shortest_path(self, source, dest, direction):
+    def _calculate_shortest_path(self, source, dest, direction):
 
-        return len(self.get_move_plan(source, dest, direction))
+        return len(self._get_move_plan(source, dest, direction))
 
 
-    # create_neighbour_cases_for_room
+    # _create_neighbour_cases_for_room
 
-    def create_neighbour_cases_for_room(self, current_room) -> []:
+    def _create_neighbour_cases_for_room(self, current_room) -> []:
 
         # Get the current room's neighbours.
 
@@ -636,7 +642,7 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Build the neighbour cases for the current room.
 
-        current_room_cases = self.create_neighbour_cases_for_room(current_room)
+        current_room_cases = self._create_neighbour_cases_for_room(current_room)
 
         # Create the conditional categorical object now that we have the cases for the current room's neighbours.
         
@@ -716,7 +722,7 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Run the Pomegranate model to get the neighbour rooms' probabilities.
 
-        neighbour_prob_dict = self.run_model_single(current_room_neighbours, variable_list, edge_list, room_and_stench_list)
+        neighbour_prob_dict = self._run_bayesian_network_model(current_room_neighbours, variable_list, edge_list, room_and_stench_list)
 
         if Global._display: print ("Status:\t\t\t*** Evaluating probability for the Wumpus - neighbour probabilities", neighbour_prob_dict)
 
@@ -733,7 +739,7 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Build the neighbour cases for the current room.
 
-        current_room_cases = self.create_neighbour_cases_for_room(current_room)
+        current_room_cases = self._create_neighbour_cases_for_room(current_room)
 
         # Create the conditional categorical object now that we have the cases for the current room's neighbours.
          
@@ -792,17 +798,16 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Run the Pomegranate model to get the neighbour rooms' probabilities.
 
-        neighbour_prob_dict = self.run_model_single(current_room_neighbours, variable_list, edge_list, room_and_breeze_list)
+        neighbour_prob_dict = self._run_bayesian_network_model(current_room_neighbours, variable_list, edge_list, room_and_breeze_list)
 
         if Global._display: print ("Status:\t\t\t*** Evaluating probability for the pit - neighbour probabilities", neighbour_prob_dict)
 
         return neighbour_prob_dict
 
 
-    # Just ask one question - I know if I feel a breeze or not; given what I know of my neighbours,
-    # which is the best one to go to.
+    # _run_bayesian_network_model
 
-    def run_model_single(self, breeze_room_neighbours, variables, edges, room_and_breeze_list): 
+    def _run_bayesian_network_model(self, breeze_room_neighbours, variables, edges, room_and_breeze_list): 
 
         # Construct the model with the three variables, and two edges
 
@@ -826,7 +831,7 @@ class ProbAgentC(MovePlanningAgentC):
         X = torch.tensor([room_and_breeze_list])
 
         X_masked = torch.masked.MaskedTensor(X, mask=X >= 0)
-        if Global._display: print ("Status:\t\t\t*** Running the BayesianNetwork model - Tensor mask:", X_masked)
+        if Global._debug: print ("Status:\t\t\t*** Running the BayesianNetwork model - Tensor mask:", X_masked)
 
         # Do the prediction.
 
@@ -868,7 +873,7 @@ class ProbAgentC(MovePlanningAgentC):
     #
     # Courtesy of Larry Simon
 
-    def _create_cases_with_two_neighbours(self):
+    def _create_cases_with_two_neighbours(self) -> []:
 
         # Initialize the grid.
 
@@ -914,7 +919,7 @@ class ProbAgentC(MovePlanningAgentC):
     #
     # Extending Larry Simon's method.
 
-    def _create_cases_with_three_neighbours(self):
+    def _create_cases_with_three_neighbours(self) -> []:
 
         # Initialize the grid.
 
@@ -972,7 +977,7 @@ class ProbAgentC(MovePlanningAgentC):
     #
     # Extending Larry Simon's method.
 
-    def _create_cases_with_four_neighbours(self):
+    def _create_cases_with_four_neighbours(self) -> []:
 
         # Initialize the grid.
 
@@ -1033,257 +1038,8 @@ class ProbAgentC(MovePlanningAgentC):
 
             grid.append(structure)
 
-        if Global._display: print ("Status:\t\t\t*** Cases grid with 3 neighbours:", grid)
+        if Global._display: print ("Status:\t\t\t*** Cases grid with 4 neighbours:", grid)
 
         return grid
 
     
-
-# BACKUP
-
-
-    def get_move_options_wumpus(self, current_room):
-
-        # Get the neighbours for the current room.
-
-        current_room_neighbours = self.rooms_dict[current_room]
-
-        # Build the neighbour cases for the current room.
-
-        current_room_cases = self.create_neighbour_cases_for_room(current_room)
-
-        # Now, setup the breeze room by getting the first room (1-1).
-        # This can be done by iterating over the keys.
-
-       # breeze_room =  "1-1" #"2-2" #"1-2"  # "1-1"
-        #pit_list["2-2"] = 0             # Remove this, just here to simulate that the Agent is safe
-  #      current_room_cases = []
-
-        # Get the stench room's neighbours.
-
-        #current_room_neighbours = self.rooms_dict[current_room]
-        #current_room_neighbours_count = len(current_room_neighbours)
-
-        #print ("The number of neighbours that stench room", current_room, "has is", current_room_neighbours_count)
-
-
-
-     #   pit21 = PredicateC(0.2).toCategorical()
-
-       # pit12 = "1-2"
-       # print ("pit12 should be Categorical = ", pit_predicate_list[pit12])
-
-      #  pit_categorical = pit_predicate_list[pit12]
-      #  print ("pit12.probs (T) = ", pit_categorical.probs[0][1])
-
-        #if (current_room_neighbours_count == 2):
-            
-        #    current_room_cases = self.create_cases_2()
-
-        #elif (current_room_neighbours_count == 3):
-
-        #    current_room_cases = self.create_cases_3()
-
-        #elif (current_room_neighbours_count == 4):
-
-        #    current_room_cases = self.create_cases_4()
-
-        #print ("Stench room cases:", current_room_cases)
-
-        # Create the probability matrix for the stench room and the predicate.
-        # Create the knowledge of the stench room if it's a wumpus or not (should be 0 - safe as
-        # the Agent would have died otherwise).
-         
-       # breeze_condition_categorical = ConditionalCategorical([current_room_cases])
-       # breeze_condition_predicate   = self.pit_predicate_list[current_room]     # !!! Remove -This isn't used - breeze useses the categorical value that contains the cases not the predicate value
-
-        stench_condition_categorical = ConditionalCategorical([current_room_cases])
-
-      #  print ("Breeze11 condition categorical:", breeze_condition_categorical)
-      #  print ("Breeze11 condition predicate:  ", breeze_condition_predicate)
-
-        # Create the variables (stench room and its adjacent rooms) and the
-        # edges (an edge is from an adjacent room to the stench room).
-
-        variable_list        = []
-        edge_list            = []
-        room_and_stench_list = []
-
-        for current_room_neighbour in current_room_neighbours:
-
-            # Create the room predicate.
-
-            if (self.percepts.get_stench()):
-
-                if (self.wumpus_list[current_room_neighbour] != 0):
-                    new_prob = 1/len(current_room_neighbours)
-                    print ("STEnCh DETECTed: THEREFORE UPDATING NEIGHTBOURS PROBS TO", new_prob)
-                    wumpus_categorical = PredicateC(new_prob).toCategorical()
-                    self.wumpus_predicate_list[current_room_neighbour] = wumpus_categorical
-                  #  self.wumpus_list[current_room_neighbour] = 1  # do this if the agent survives
-
-            current_room_neighbour_predicate = self.wumpus_predicate_list[current_room_neighbour]
-            variable_list.append(current_room_neighbour_predicate)
-
-            # Create the edge.
-
-            edge_list.append((current_room_neighbour_predicate, stench_condition_categorical))
-
-            # Add the knowledge of if the neighbour is a wumpus to the tensor.
-            # -1 is unknown; 0 is safe; 1 is a pit
-
-            current_room_neighbour_wumpus_knowledge = self.wumpus_list[current_room_neighbour]
-            room_and_stench_list.append(current_room_neighbour_wumpus_knowledge)
-
-                
-        # If there is a stench, then the Wumpus is in one of the neighbours.
-        # Therefore, set the rest of the locations to 0 (no Wumpus) and the
-        # predicates to 0 (no chance of a Wumpus).
-        
-        if (self.percepts.get_stench()):
-
-            for room in self.wumpus_list.keys():
-
-                if ((self.wumpus_list[room] == -1) and (room not in current_room_neighbours)):
-
-                    no_wumpus_categorical = PredicateC(0).toCategorical()
-                    self.wumpus_predicate_list[room] = no_wumpus_categorical
-                    self.wumpus_list[room] = 0
-
-            print ("wumpus_list is now", self.wumpus_list)
-
-
-
-        # Now add the predicate for the stench room at the end of the list.
-        # Add the stench knowledge - 0 if no stench is detected, 1 if a stench is detected.
-
-        stench_condition_knowledge = self.stench_list[current_room]  #1 # stench is detected
-
-        variable_list.append(stench_condition_categorical)
-        room_and_stench_list.append(stench_condition_knowledge)
-
-     #   print ("variable_list:", variable_list)
-     #   print ("edge list:    ", edge_list)
-        print ("room_and_stench_list:  ", room_and_stench_list)
-
-        # Run the model.
-        neighbour_prob_dict = self.run_model_single(current_room_neighbours, variable_list, edge_list, room_and_stench_list)
-
-        print ("neighbour_prob_dict:", neighbour_prob_dict)
-
-        return neighbour_prob_dict
-
-
-
-    def get_move_options(self, current_room):
-
-        # Get the neighbours for the current room.
-
-        current_room_neighbours = self.rooms_dict[current_room]
-
-        # Build the neighbour cases for the current room.
-
-        current_room_cases = self.create_neighbour_cases_for_room(current_room)
-
-        # Now, setup the breeze room by getting the first room (1-1).
-        # This can be done by iterating over the keys.
-
-       # breeze_room =  "1-1" #"2-2" #"1-2"  # "1-1"
-        #pit_list["2-2"] = 0             # Remove this, just here to simulate that the Agent is safe
-
-        #current_room_cases = []
-
-        ## Get the breeze room's neighbours.
-
-        #current_room_neighbours = self.rooms_dict[current_room]
-        #current_room_neighbours_count = len(current_room_neighbours)
-
-        #print ("The number of neighbours that breeze room", current_room, "has is", current_room_neighbours_count)
-
-
-
-     #   pit21 = PredicateC(0.2).toCategorical()
-
-       # pit12 = "1-2"
-       # print ("pit12 should be Categorical = ", pit_predicate_list[pit12])
-
-      #  pit_categorical = pit_predicate_list[pit12]
-      #  print ("pit12.probs (T) = ", pit_categorical.probs[0][1])
-
-        #if (current_room_neighbours_count == 2):
-            
-        #    current_room_cases = self.create_cases_2()
-
-        #elif (current_room_neighbours_count == 3):
-
-        #    current_room_cases = self.create_cases_3()
-
-        #elif (current_room_neighbours_count == 4):
-
-        #    current_room_cases = self.create_cases_4()
-
-        #print ("Breeze room cases:", current_room_cases)
-
-        # Create the probability matrix for the breeze room and the predicate.
-        # Create the knowledge of the breeze room if it's a pit or not (should be 0 - safe as
-        # the Agent would have died otherwise).
-         
-        breeze_condition_categorical = ConditionalCategorical([current_room_cases])
-        breeze_condition_predicate   = self.pit_predicate_list[current_room]     # !!! Remove -This isn't used - breeze useses the categorical value that contains the cases not the predicate value
-
-        stench_condition_categorical = ConditionalCategorical([current_room_cases])
-
-      #  print ("Breeze11 condition categorical:", breeze_condition_categorical)
-      #  print ("Breeze11 condition predicate:  ", breeze_condition_predicate)
-
-        # Create the variables (breeze room and its adjacent rooms) and the
-        # edges (an edge is from an adjacent room to the breeze room).
-
-        variable_list        = []
-        edge_list            = []
-        room_and_breeze_list = []
-
-        for current_room_neighbour in current_room_neighbours:
-
-            # Create the room predicate.
-
-            if (self.percepts.get_breeze()):
-                new_prob = 1/len(current_room_neighbours)
-                print ("BREEzE DETECTed: THEREFORE UPDATING NEIGHTBOURS PROBS TO", new_prob)
-                pit_categorical = PredicateC(new_prob).toCategorical()
-                self.pit_predicate_list[current_room_neighbour] = pit_categorical
-
-            current_room_neighbour_predicate = self.pit_predicate_list[current_room_neighbour]
-            variable_list.append(current_room_neighbour_predicate)
-
-            # Create the edge.
-
-            edge_list.append((current_room_neighbour_predicate, breeze_condition_categorical))
-
-            # Add the knowledge of if the neighbour is a pit to the tensor.
-            # -1 is unknown; 0 is safe; 1 is a pit
-
-            current_room_neighbour_pit_knowledge = self.pit_list[current_room_neighbour]
-            room_and_breeze_list.append(current_room_neighbour_pit_knowledge)
-
-        # Now add the predicate for the breeze room at the end of the list.
-        # Add the breeze knowledge - 0 if no breeze is detected, 1 if a breeze is detected.
-
-        breeze_condition_knowledge = self.breeze_list[current_room]  #1 # breeze is detected
-
-        variable_list.append(breeze_condition_categorical)
-        room_and_breeze_list.append(breeze_condition_knowledge)
-
-     #   print ("variable_list:", variable_list)
-     #   print ("edge list:    ", edge_list)
-        print ("room_and_breeze_list:  ", room_and_breeze_list)
-
-        # Run the model.
-        neighbour_prob_dict = self.run_model_single(current_room_neighbours, variable_list, edge_list, room_and_breeze_list)
-
-        print ("neighbour_prob_dict:", neighbour_prob_dict)
-
-        return neighbour_prob_dict
-
-       # self.run_model(variable_list, edge_list)
-       # self.run_model(variable_list[0], edge_list[0])
