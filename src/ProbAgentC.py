@@ -4,27 +4,20 @@
 
 import random
 import networkx as nx
-from networkx.algorithms.bridges import local_bridges
-from numpy._typing import _256Bit
 import math
-
-
-# Import Project classes.
-
 import torch
 from torch._prims_common import Tensor
-import Global
-
-from MovePlanningAgentC import MovePlanningAgentC
-from PredicateC import PredicateC
-
 from pomegranate.distributions import Categorical
 from pomegranate.distributions import ConditionalCategorical
 from pomegranate.bayesian_network import BayesianNetwork
-
-import torch
-
 import numpy
+
+# Import Project classes.
+
+import Global
+from MovePlanningAgentC import MovePlanningAgentC
+from PredicateC import PredicateC
+ 
 
 class ProbAgentC(MovePlanningAgentC):
 
@@ -40,6 +33,8 @@ class ProbAgentC(MovePlanningAgentC):
 
         self.has_arrow = True
         self.move_plan = []
+        self.path_taken = []
+        self.rooms_dict = {}
 
         # Build the model.
 
@@ -67,12 +62,18 @@ class ProbAgentC(MovePlanningAgentC):
 
         if (self.percepts.get_scream()):
 
-            print ("*********SCREAM DETECTED")
+            # A scream has been heard.
+
+            if Global._display: print ("Status:\t\t\t*** Agent has detected the Scream from a dead Wumpus.  Setting Wumpus probability to 0..")
+
+            # Iterate over rooms.
 
             for room_key in self.rooms_dict.keys():
 
+                # As the Wumpus is dead, the probability of dying from the Wumpus is now 0.
+                # Update the Wumpus predicates and Wumpus list.
+
                 new_prob = 0
-                print ("new probability for each remaining room:", new_prob)
                 wumpus_categorical = PredicateC(new_prob).toCategorical()
                 self.wumpus_predicate_list[room_key] = wumpus_categorical
                 self.wumpus_list[room_key] = 0
@@ -92,47 +93,49 @@ class ProbAgentC(MovePlanningAgentC):
             self.location  = new_location
             self.direction = direction
 
-          #  x = self.location[0]
-          #  y = self.location[1]
+            # The graph node is in the form (1, 1).  Convert it into a dictionary lookup value "1-1".
+
             current_room = str(self.location[0]) + "-" + str(self.location[1])
 
-            print ("+++++++ Agent is in: ", self.location, "facing", self.direction)
-            print ("+++++++ Converted Location: ", current_room)
+            # If the Agent got to this point, the Agent is still alive so this room is neither a pit
+            # or the location of the Wumpus.
 
-            # I Don't think we need to test for a breeze at this point as I believe it is the
-            # post-move percepts.  It doesn't trigger...
-
-            if (self.percepts.get_breeze()):
-            
-                print ("+++++++ BREEZE DETECTED!!")
-
-            if (self.percepts.get_stench()):
-            
-                print ("+++++++ STENCH DETECTED!!")
-
-            # If we got to this point, the Agent is still alive so this room is not a pit!
-
-            print ("!!!!!!!NOT A PIT !!!!  Setting this room to be not a pit!!!")
             self.pit_list[current_room] = 0
-
-            print ("!!!!!!!NOT A WUMPUS !!!!  Setting this room to be not a pit!!!")
             self.wumpus_list[current_room] = 0
+
+            # As the Wumpus has an original 1/15 probability of being in a room, if this room
+            # does not have the Wumpus then the probability of the other rooms having the Wumpus
+            # increases.
+
+            # Count how many rooms already have been determined to not contain the Wumpus.
 
             wumpus_free_room_count = 0
 
             for wumpus_room in self.wumpus_list.keys():
 
+                # If the room was already Wumpus-free, add it to the count.
+
                 if (self.wumpus_list[wumpus_room] == 0):
 
                     wumpus_free_room_count = wumpus_free_room_count + 1
 
+            # Calculate the new probability for the Wumpus.
+
+            new_wumpus_prob = 1/(15 - wumpus_free_room_count) if wumpus_free_room_count < 15 else 0
+            if Global._display: print ("Status:\t\t\t*** Agent has calculated the new Wumpus probability for each unknown room as", new_wumpus_prob)
+
+            # Iterate over the rooms and update the Wumpus predicate and probability info.
+
             for room_key in self.rooms_dict.keys():
+
+                # Update the Wumpus room probability if the room is 'unknown'.  The other rooms
+                # would already have a 0 (e.g., 1-1).
 
                 if (self.wumpus_list[room_key] == -1):
 
-                    new_prob = 1/(15 - wumpus_free_room_count) if wumpus_free_room_count < 15 else 0
-                    print ("new probability for each remaining room:", new_prob)
-                    wumpus_categorical = PredicateC(new_prob).toCategorical()
+                    # Set the new probability.
+
+                    wumpus_categorical = PredicateC(new_wumpus_prob).toCategorical()
                     self.wumpus_predicate_list[room_key] = wumpus_categorical
 
 
@@ -141,22 +144,10 @@ class ProbAgentC(MovePlanningAgentC):
             self.path_taken.append(current_room)
 
 
-        # Print the percepts.
-
-        if Global._display: self.print_percepts()
-
-        # Do we detect a breeze?  Maybe here decide best next move
-
-
     # action
 
     def action(self) -> str:
  
-        print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! CURRENT ROOM:", self.location)
-        print ("CURRENT PIT LIST", self.pit_list)
-        print ("CURRENT BREEZE LIST", self.breeze_list)
-        print ("CURRENT PATH", self.path_taken)
-
         action = None
 
         # The Agent is either exploring, looking for the Gold or the Agent has
@@ -208,7 +199,6 @@ class ProbAgentC(MovePlanningAgentC):
             if Global._display: print ("Move plan after action:\t\t", self.move_plan)
 
         
-        
         else:
 
             # For the Move Planning Agent, use its sensors to read the percepts to see if the gold 
@@ -248,61 +238,37 @@ class ProbAgentC(MovePlanningAgentC):
 
             else:
       
-                # Know location and direction
+                # Move Action.  First, identify the Agent location and direction.
 
-                # 
-                x = self.location[0]
-                y = self.location[1]
-                location_conversion = str(x) + "-" + str(y)
+                # The graph node is in the form (1, 1).  Convert it into a dictionary lookup value "1-1".
 
-                print ("******* Agent is in: ", self.location, "facing", self.direction)
-                print ("******* Converted Location: ", location_conversion)
+                current_room = str(self.location[0]) + "-" + str(self.location[1])
 
                 # Breeze
 
-                if (self.percepts.get_breeze()):
-            
-                    print ("**** BEFORE GETTING THE NEXT MOVE, BREEZE DETECTED!!")
-
-                    # Breeze is detected in this room.  Therefore, update the breeze list.
-
-                    self.breeze_list[location_conversion] = 1
-                else:
-
-                    # No breeze detected so set this room on the breeze list to be 0.
-                    
-                    self.breeze_list[location_conversion] = 0
+                self.breeze_list[current_room] = 1 if (self.percepts.get_breeze()) else 0
 
                 # Stench
 
-                if (self.percepts.get_stench()):
-            
-                    print ("**** BEFORE GETTING THE NEXT MOVE, STENCH DETECTED!!")
+                self.stench_list[current_room] = 1 if (self.percepts.get_stench()) else 0
 
-                    # Stench is detected in this room.  Therefore, update the breeze list.
+                # Get the possible move options based on the possibility that the next room is a pit or the Wumpus.
 
-                    self.stench_list[location_conversion] = 1
-                else:
+                pit_move_options = self.get_move_options(current_room)
+                wumpus_move_options = self.get_move_options_wumpus(current_room)
 
-                    # No stench detected so set this room on the breeze list to be 0.
-                    
-                    self.stench_list[location_conversion] = 0
-
-
-
-                # Get the possible move options.
-
-                move_options = self.get_move_options(location_conversion)
-                wumpus_move_options = self.get_move_options_wumpus(location_conversion)
-
-
-                best_room_option = self.choose_best_move_option(location_conversion, move_options, wumpus_move_options, self.direction)
+                best_room_option = self.choose_best_move_option(current_room, pit_move_options, wumpus_move_options, self.direction)
              
-                print ("The best room option is", best_room_option)
+                if Global._display: print ("Status:\t\t\t*** The best room for the Agent to move to is", best_room_option)
 
-                # if (have arrow and stench is true; turn in direction and shoot arrow in direction of )
+                # If the best room option is Exit, the Agent has determined that it is too dangerous to move as the
+                # probability of dying is > 50 %.  Exit out of the cave.
 
                 if (best_room_option == 'Exit'):
+
+                    if Global._display: print ("Status:\t\t\t*** Next moves are too dangerous.  Agent is bailing.", self.move_plan)
+
+                    # Do one final grab just in case!
 
                     action = Global._grab_action
 
@@ -313,49 +279,25 @@ class ProbAgentC(MovePlanningAgentC):
                 
                 else:
 
-                    self.move_plan = self.get_move_plan(location_conversion, best_room_option, self.direction)
+                    # Get the move plan and execute it.  The move plan will be something like ["TurnLeft", "Forward"].
 
-                    print ("&&&&&&&&&&&&&&& MOVE_PLAN:", self.move_plan)
+                    self.move_plan = self.get_move_plan(current_room, best_room_option, self.direction)
+
+                    if Global._display: print ("Status:\t\t\t*** The Agent's move plan is", self.move_plan)
+
+                    # Get the first action to take.
 
                     action = self.move_plan.pop(0)
 
-                    print ("&&&&&&&&&&&&&&& POPPED the MOVE_PLAN and action is:", action)
-
- 
-                # Do we randomly shoot the arrow or shoot the arrow when we smell the wumpus?
-
-
-
-                # Randomly select one of the possible actions from the action set (minus
-                # Grab and Climb).
-
-                #  UNCOMMENT THIS TO GET THE SHOOT - CHANGE RANDOM
-                #  UNCOMMENT THIS TO GET THE SHOOT
-                #  UNCOMMENT THIS TO GET THE SHOOT
-
-            #    agent_action = random.randint(0, 3)
-
-            #    if Global._display: print ("Action:\t\t\t", Global._action_array[agent_action])
-        
-            #    action = Global._action_array[agent_action]
 
         # Return the selected action.
 
         return action
 
 
-
+    # build_model
 
     def build_model(self):
-
-        # Initialize the path taken through the cave.  As a room is visited, the node is added to the
-        # list.
-
-        self.path_taken = []
-
-        # Dictionary of rooms as each room is unique (e.g., "1-1").
-
-        self.rooms_dict = {}
 
         # Iterate over the x-grid.
 
@@ -385,7 +327,7 @@ class ProbAgentC(MovePlanningAgentC):
                     south_neighbour = str(i) + "-" + str(j-1)
                     neighbours.append(south_neighbour)
 
-                print ("(", i, ",", j, ") -> ", neighbours)
+                if Global._display: print ("Status:\t\t\t*** The Agent's neighbours at (", i, ",", j, ") -> ", neighbours)
 
                 # Construct the room key and add it and the neighbours to the room dictionary.
 
@@ -395,7 +337,7 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Print the rooms dictionary.
 
-        print("Rooms:", self.rooms_dict)
+        if Global._display: print ("Status:\t\t\t*** The Agent's room dictionary is:", self.rooms_dict)
 
         # Now that the set of rooms and each room's neighbours has been constructed, set all
         # rooms to be the standard 20% probability that the room could be a pit (before any
@@ -416,10 +358,12 @@ class ProbAgentC(MovePlanningAgentC):
         self.breeze_list = {}
         breeze_unknown = -1
 
-        # Add the Wumpus model.
+        # Add the Wumpus model. To start, the probability of the Wumpus being in a room is 1/15 (the Wumpus
+        # can't be in the start room).  However, as the cave is explored, the probability of the Wumpus being
+        # there increases.
 
         self.wumpus_predicate_list = {}
-        wumpus_categorical = PredicateC(1/15).toCategorical() # Categorical([[1./15, 1./15., 1./15, 1./15., 1./15., 1./15, 1./15., 1./15, 1./15., 1./15, 1./15., 1./15, 1./15., 1./15, 1./15.]])
+        wumpus_categorical = PredicateC(1/15).toCategorical() 
 
         self.wumpus_list = {}
         wumpus_unknown = -1
@@ -453,19 +397,12 @@ class ProbAgentC(MovePlanningAgentC):
         self.pit_list["1-1"] = 0
         self.wumpus_list["1-1"] = 0
 
-        # Print out the pit predicate list and the pit list.
-
-        print ("pit_predicate_list", self.pit_predicate_list)
-        print ("pit_list", self.pit_list)
-        print ("breeze_list", self.breeze_list)
-        print ("wumpus_predicate_list", self.wumpus_predicate_list)
-        print ("wumpus_list", self.wumpus_list)
-        print ("stench_list", self.stench_list)
-
         # Finally, add the starting room to the path taken.
 
         self.path_taken.append("1-1")
 
+
+    # get_move_plan
 
     def get_move_plan(self, src_room, dest_room, direction):
 
@@ -478,6 +415,9 @@ class ProbAgentC(MovePlanningAgentC):
 
         dest_x = dest_room[0]
         dest_y = dest_room[2]
+
+        # Determine if the destination node is North, East, West or South 
+        # from the source node.
 
         if (dest_x < src_x):
             destination = Global._west
@@ -504,6 +444,10 @@ class ProbAgentC(MovePlanningAgentC):
             # Might as well turn right.
 
             while (direction != destination):
+
+                # Continue turning right and updating the direction until it matches the
+                # destination.
+
                 direction = self.turn_right(direction)
                 move_plan.append(Global._turnRight_action)
 
@@ -514,7 +458,11 @@ class ProbAgentC(MovePlanningAgentC):
         return move_plan 
 
 
+    # turn_right
+    
     def turn_right(self, direction):
+
+        # By turning right, return the new direction.
 
         if (direction == Global._north):
             return Global._east
@@ -526,75 +474,104 @@ class ProbAgentC(MovePlanningAgentC):
             return Global._north
 
 
+    # choose_best_move_option
+            
     def choose_best_move_option(self, current_location, neighbour_prob_dict, wumpus_neighbour_prob_dict, direction):
 
-        print ("Choosing the best room to move to")
-        print ("Here is the path so far", self.path_taken)
+        # Set the best room variables.
 
         best_false_value = 0
         best_room_option = ""
         best_room_options = []
 
+        # Iterate over the current room's neighbours.
+
         for best_room in neighbour_prob_dict.keys():        # pit_neighbour and wumpus_neighbour are the same thing
+
+            # Get the True / False dictionary for this neighbour from the Pit network and extract the False value.
+            # The False value is the % that the room does not have a Pit or Wumpus (i.e., it would be
+            # True if it contained a pit or wumpus).
 
             true_false_dict = neighbour_prob_dict[best_room]
             false_value = true_false_dict["False"]
 
+            # Get the True / False dictionary from the Wumpus network.
+
             wumpus_true_false_dict = wumpus_neighbour_prob_dict[best_room]
             wumpus_false_value = wumpus_true_false_dict["False"]
 
-            print ("Evaluating room:", best_room, ": the % that it is NOT a pit is", false_value)
-            print ("Evaluating room:", best_room, ": the % that it is NOT a wumpus is", wumpus_false_value)
+            if Global._display: print ("Status:\t\t\t*** Evaluating room", best_room, "the % that it is NOT a pit is", false_value)
+            if Global._display: print ("Status:\t\t\t*** Evaluating room", best_room, "the % that it is NOT a wumpus is", wumpus_false_value)
 
-            # both_false 
+            # Calculate the % that the room is a pit or wumpus. 
 
             not_a_pit_or_wumpus = false_value * wumpus_false_value
 
-            print ("Evaluating room:", best_room, ": the % that it is NOT both is (1-p)(1-w)", not_a_pit_or_wumpus)
+            if Global._display: print ("Status:\t\t\t*** Evaluating room", best_room, "the % that it is NOT both is (1-p)(1-w)", not_a_pit_or_wumpus)
+
+            # Sometimes, the % calculation from the Bayesian Network is not a number.  Convert it to 1.
 
             is_nan = isinstance(not_a_pit_or_wumpus, float) and math.isnan(not_a_pit_or_wumpus)
 
             if (is_nan):
                 not_a_pit_or_wumpus = 1
-                print ("Converting room:", best_room, ": the % that it is NOT both is (1-p)(1-w)", not_a_pit_or_wumpus)
+                if Global._display: print ("Status:\t\t\t*** Converting room:", best_room, ": the % that it is NOT both is (1-p)(1-w)", not_a_pit_or_wumpus)
 
-         #   if (false_value >= best_false_value):
+            # Determine if the new % is greater or equal to the current best False value.
+
             if (not_a_pit_or_wumpus >= best_false_value):
 
-                # Ensure that the best room is not the last room visited.  The last room visited
-                # will have a False value of 100% and the Agent would just go back and forth.
+                # Ensure that the best room is not in the path of rooms visited so that it doesn't go into
+                # an endless loop.  Always explore further!
 
                 if (best_room not in (self.path_taken)):
 
-                   # best_room_option = best_room 
-                   # if (false_value > best_false_value):
+                    # If the combined % > Best False value.
+                    # Set the best room options to be just this room.
+
                     if (not_a_pit_or_wumpus > best_false_value):
                         best_room_options = [best_room] 
                     else:
-                        # Equal,
+                        # If the combined % = Best False value.
+                        # Add this room to the set of best room options.
+
                         best_room_options.append(best_room) 
 
+                    # Set the new high watermark.
+
                     best_false_value = not_a_pit_or_wumpus
+
+        # Check if there is a set of best rooms (e.g., tied with their False values).
 
         if (len(best_room_options) > 1):
 
             shortest_path = 100    # Make it large to start!
 
+            # Iterate over the best room options.
+
             for candidate_option in best_room_options:
+
+                # Calculate the shortest path to get to that room.
 
                 path_len = self.calculate_shortest_path(current_location, candidate_option, direction)
 
                 print ("Path Len from ", current_location, "to", candidate_option, "while facing", direction, "is", path_len)
+
+                # Check to see if this path length is the shortest path between the nodes.
+
                 if (path_len < shortest_path):
                     shortest_path = path_len
                     best_room_option = candidate_option
 
         else:
+
+            # There is only one best room in the set.  Just set it.
+
             best_room_option = best_room_options[0]
 
-        #best_room_option = random.choice(best_room_options)
         
-        # Determine if it is best if the Agent just leaves.
+        # Determine if it is best if the Agent just leaves.  If the probability that the room is safe (i.e., False)
+        # is lower than 50 %, it is best for the Agent to bail.
 
         if (best_false_value < .5):
 
@@ -602,7 +579,8 @@ class ProbAgentC(MovePlanningAgentC):
 
             best_room_option = 'Exit'
 
-        print ("Choosing", best_room_option, "from shortest path out of possible equal options:", best_room_options)
+        # Return the best room option.
+
         return best_room_option
 
     
@@ -611,13 +589,6 @@ class ProbAgentC(MovePlanningAgentC):
     def calculate_shortest_path(self, source, dest, direction):
 
         return len(self.get_move_plan(source, dest, direction))
-
-    #    candidate_move_plan = self.get_move_plan(source, dest, direction)
-
-    #    return len(candidate_move_plan)
-  
-    # NOW ADD WUMPUS AND PROB OF WUMPUS AND PIT IS WUMPUS x PIT - THIS SHOULD CHANGE THE PROBABILITIES
-    # WHERE SOME PROBABILITY OF ONE OR THE OTHER IS > 50%  -> (1-w)(1-p)
 
 
     # get_move_options_wumpus
@@ -744,6 +715,7 @@ class ProbAgentC(MovePlanningAgentC):
         print ("neighbour_prob_dict:", neighbour_prob_dict)
 
         return neighbour_prob_dict
+
 
     # get_move_options
 
@@ -928,105 +900,8 @@ class ProbAgentC(MovePlanningAgentC):
 
         return neighbour_prob_dict
 
-  #  def run_model(self, pit12, pit21, breeze11):
-    def run_model(self, variables, edges):
 
-        # Construct the model with the three variables, and two edges
-
-      #  variables = [pit12, pit21, breeze11]
-      #  edges = [(pit12, breeze11), (pit21, breeze11)]
-
-        # Check shapes
-        print('variables shape', numpy.array(variables).shape)
-        print('edges shape', numpy.array(edges).shape)
-
-        pits_model = BayesianNetwork(variables, edges)
-
-        # Note that model.bake() is not required as it was in earlier versions of Pomegranate
-
-        X = torch.tensor([[-1, -1, 0],  # pit12?, pit21?, breeze11 is false
-                          [-1, -1, 1],  # pit12?, pit21?, breeze11 is true
-                          [-1, -1, -1], # pit12?, pit21?, breeze11?
-                          [1, -1, -1]   # pit12 is true, pit21?, breeze11?
-                         ])
-
-        X_masked = torch.masked.MaskedTensor(X, mask=X >= 0)
-        print(X_masked)
-
-
-        my_tensors = pits_model.predict_proba(X_masked)
-
-        print ("Tensors:", my_tensors)
-
-
-    def create_cases(self, neighbours):
-
-        cases2 = []
-        num_neighbours = len(neighbours)
-        print ("neighbours = ", neighbours)
-        print ("len of neighbours = ", num_neighbours)
-
-      #  if (num_neighbours == 2):
-
-      #      for i in [False, True]:
-      #          c = []
-       #         for j in [False, True]:
-      ##              case = i or j      # we can use or between them because we have a breeze if there is a pit in any of the adjacent squares
-       #             if case:
-       #                 p = 1.0
-       #             else:
-       #                 p = 0.0
-       #             c.append(PredicateC(p).toList())
-       #         cases.append(c)
-
-       # elif (num_neighbours == 4):
-        if True:
-
-            for index, neighbour in enumerate(neighbours, start=1):
-                print ("index", index, "->", neighbour)
-
-            for index, neighbour in enumerate(neighbours):
-
-                print ("***Neighbour", neighbour, "at index", index, "and", index+1)
-
-                for index2, neighbour2 in enumerate(neighbours[index+1:]): #, start=1):
-        
-                    cases = []
-
-                    print ("\tIndex2: looking at neighbour", neighbour, "and", neighbour2)
-
-                    for i in [False, True]:
-                        c = []
-                        for j in [False, True]:
-                            case = i or j      # we can use or between them because we have a breeze if there is a pit in any of the adjacent squares
-                            if case:
-                                p = 1.0
-                            else:
-                                p = 0.0
-                            c.append(PredicateC(p).toList())
-
-                            print ("c:", c)
-
-                        cases.append(c)
-                        print ("cases for:", neighbour, "and", neighbour2, ":", cases)
-                
-                    cases2.append(cases)
-                    print ("cases2 now:", cases2)
-
-        print("Cases2: ", cases2) # check to make sure it is what we expect
-
-        return cases2
-       # print("breeze11.probs:", breeze11.probs)  
-
-
-
-
-
-
-
-
-
-
+    # create_cases_2
 
     def create_cases_2(self):
 
@@ -1112,99 +987,3 @@ class ProbAgentC(MovePlanningAgentC):
         return grid
 
     
-
-
-    # Old Constructor
-
-    #def __init__(self, location):
-
-    #    # Invoke the super class.
-
-    #    super().__init__(location)
-        
-    #    print ("hello there Cam")
-
-    # #   myPredicate = PredicateC(.8)
-    #    pit12 = PredicateC(0.2).toCategorical()
-    #    pit21 = PredicateC(0.2).toCategorical()
-
-    #    print ("pit12 should be Categorical = ", pit12)
-    #    print ("pit21 should be Categorical = ", pit21)
-
-    #    print ("pit12.probs (T) = ", pit12.probs[0][1])
-    #    print ("pit12.probs (F) = ", pit12.probs[0][0])
-
-    #    print ("pit21.probs (T) = ", pit21.probs[0][1])
-    #    print ("pit21.probs (F) = ", pit21.probs[0][0])
-
-    #    breeze11 = ConditionalCategorical([[
-    #        [[1.0, 0.0], [0.0, 1.0]],
-    #        [[0.0, 1.0], [0.0, 1.0]]
-    #    ]])
-
-
-    #    cases = []
-    #    for p12 in [False, True]:
-    #        c = []
-    #        for p21 in [False, True]:
-    #            case = p12 or p21      # we can use or between them because we have a breeze if there is a pit in any of the adjacent squares
-    #            if case:
-    #                p = 1.0
-    #            else:
-    #                p = 0.0
-    #            c.append(PredicateC(p).toList())
-    #        cases.append(c)
-
-    #    print("Cases: ", cases) # check to make sure it is what we expect
-    #    print("breeze11.probs:", breeze11.probs)  
-
-
-
-    #    breeze11 = ConditionalCategorical([
-    #        cases
-    #    ])
-
-
-
-    #    #
-    #    # Do this each time the Agent moves...
-    #    #
-
-
-    #    # Construct the model with the three variables, and two edges
-
-    #    variables = [pit12, pit21, breeze11]
-    #    edges = [(pit12, breeze11), (pit21, breeze11)]
-
-    #    print ("variables:", variables)
-    #    print ("edges:    ", edges)
-
-    #    # Check shapes
-    #    print('variables shape', numpy.array(variables).shape)
-    #    print('edges shape', numpy.array(edges).shape)
-
-    #    pits_model = BayesianNetwork(variables, edges)
-
-    #    # Note that model.bake() is not required as it was in earlier versions of Pomegranate
-
-    #    X = torch.tensor([[-1, -1, 0],  # pit12?, pit21?, breeze11 is false
-    #                      [-1, -1, 1],  # pit12?, pit21?, breeze11 is true
-    #                      [-1, -1, -1], # pit12?, pit21?, breeze11?
-    #                      [1, -1, -1]   # pit12 is true, pit21?, breeze11?
-    #                     ])
-
-    #    X_masked = torch.masked.MaskedTensor(X, mask=X >= 0)
-    #    print(X_masked)
-
-
-    #    my_tensors = pits_model.predict_proba(X_masked)
-
-    #    print ("Tensors:", my_tensors)
-
-
-    #    # Let's do this again but through functions
-
-
-    #    self.build_model()
-
-    #    exit(0)
