@@ -14,7 +14,7 @@ from EpisodeControllerC import EpisodeControllerC
 
 # main
 
-def main():
+def main(agent_arg):
 
     # Filter out all warnings.
 
@@ -35,12 +35,30 @@ def main():
 
         # Initialize the Agent.
 
-        # For Project 1, use the Naive Agent (does not store location)
-        # For Project 2, use the Move Planning Agent (stores location)
+        # For Project 1, use the Naive Agent (does not store location, all actions are random)
+        # For Project 2, use the Move Planning Agent (stores location, move / turns are random, exit plan on gold)
+        # For Project 3, use the Probability Agent (stores location, moves based on probability, exit plan on gold or danger)
 
-     #   myAgent = NaiveAgentC()
-     #   myAgent = MovePlanningAgentC(Global._start_room)
-        myAgent = ProbAgentC(Global._start_room)
+        myAgent = None
+
+        # Determine the Agent to use.
+
+        if (agent_arg == "Naive"):
+
+            myAgent = NaiveAgentC()
+
+        elif (agent_arg == "MovePlanning"):
+
+            myAgent = MovePlanningAgentC(Global._start_room)
+        
+        elif (agent_arg == "Prob"):
+
+            myAgent = ProbAgentC(Global._start_room)
+
+        else:
+            # Default to the Naive Agent.
+
+            myAgent = NaiveAgentC()
 
         # Initialize the environment.
 
@@ -91,4 +109,4 @@ def main():
 
 # Release the Wumpus!
 
-main()
+main("MovePlanning")
