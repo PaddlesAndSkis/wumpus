@@ -14,7 +14,7 @@ from EpisodeControllerC import EpisodeControllerC
 
 # main
 
-def main(agent_arg):
+def main(agent_arg, episodes):
 
     # Filter out all warnings.
 
@@ -22,7 +22,7 @@ def main(agent_arg):
 
     # Set local variables.
 
-    number_of_episodes = 1000 #1000
+    number_of_episodes = episodes
     episode_wins = 0
     episode_scares = 0
     episode_total_score = 0
@@ -109,4 +109,4 @@ def main(agent_arg):
 
 # Release the Wumpus!
 
-main("MovePlanning")
+main("MovePlanning", 10)

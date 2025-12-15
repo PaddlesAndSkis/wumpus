@@ -46,10 +46,10 @@ class ProbAgentC(MovePlanningAgentC):
 
     def percept(self, percepts):
 
-        # For the Move Planning Agent, it will use the Percepts for grabbing the gold and
+        # For the Probability Agent, it will use the Percepts for grabbing the gold and
         # climbing out of the cave.  As it also uses the Percepts for detecting a Bump when
         # trying to go out of bounds, it will also use the Percepts to detect that a valid
-        # move has been made.
+        # move has been made.  It also uses it to detect screams.
 
         # Call the super class to register the percepts.
 
@@ -202,8 +202,9 @@ class ProbAgentC(MovePlanningAgentC):
         
         else:
 
-            # For the Move Planning Agent, use its sensors to read the percepts to see if the gold 
-            # is in the current room or if they can climb out the cave with the gold.
+            # For the Probability Agent, use its sensors to read the percepts to see if the gold 
+            # is in the current room or if they can climb out the cave with the gold. Otherwise, if it 
+            # detects a stench, fire the arrow (if it still has it) or look for the next best room to move into.
 
             if Global._display: print ("Status:\t\t\t*** Agent is currently exploring looking for Gold...")
 
@@ -446,10 +447,13 @@ class ProbAgentC(MovePlanningAgentC):
 
         # Now figure out how to turn to get there.
 
-        if ((direction == Global._east) and (destination == Global._north)):
+        if (((direction == Global._east) and (destination == Global._north)) or
+            ((direction == Global._west) and (destination == Global._south)) or
+            ((direction == Global._south) and (destination == Global._east)) or
+            ((direction == Global._north) and (destination == Global._west))):
 
-            # This is the only direction and destination where turning left
-            # is better.
+            # These are the only directions and destinations where turning left
+            # is shorter.
 
             move_plan.append(Global._turnLeft_action)
         else:
